@@ -67,8 +67,9 @@ fun EditMode() {
   }
 
   Button(onClick = {
-    println("copy to clipboard")
+    val result:String = generateCode(curves)
   }) {
     Text("copy to clipboard")
   }
 }
+

@@ -14,6 +14,11 @@ kotlin {
         implementation("com.squareup:kotlinpoet:1.10.2")
       }
     }
+    named("jvmTest") {
+      dependencies {
+        implementation(kotlin("test"))
+      }
+    }
   }
 }
 

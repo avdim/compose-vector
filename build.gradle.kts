@@ -25,12 +25,12 @@ allprojects {//todo allprojects bad?
     maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
 
-    if (USE_KOTLIN_DEV_REPOSITORY) {
-      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
-      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-      maven { setUrl("https://dl.bintray.com/kotlin/kotlinx") }
-      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-js-wrappers") }
-    }
+//    if (USE_KOTLIN_DEV_REPOSITORY) {
+//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
+//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
+//      maven { setUrl("https://dl.bintray.com/kotlin/kotlinx") }
+//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-js-wrappers") }
+//    }
   }
   tasks.withType(AbstractTestTask::class) {
     testLogging {
@@ -40,23 +40,11 @@ allprojects {//todo allprojects bad?
   }
   //todo check difference if use afterEvaluate { tasks... }
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = MIN_JDK_VERSION.kotlinTarget
-    if (COMPOSE_WORKAROUND) {
-      kotlinOptions {
-        freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true")
-      }
-    }
-  }
-  if (ConfBuild.TRACE_GRADLE_TASKS) {
-    afterEvaluate {
-      tasks.all {
-        doFirst {
-          println("before task ${this.path}")
-        }
-        doLast {
-          println("after task ${this.path}")
-        }
-      }
-    }
+    kotlinOptions.jvmTarget = "11"
+//    if (COMPOSE_WORKAROUND) {
+//      kotlinOptions {
+//        freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true")
+//      }
+//    }
   }
 }

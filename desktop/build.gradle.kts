@@ -11,6 +11,7 @@ kotlin {
     named("jvmMain") {
       dependencies {
         implementation(compose.desktop.currentOs)
+        implementation("com.squareup:kotlinpoet:1.10.2")
       }
     }
   }

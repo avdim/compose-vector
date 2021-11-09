@@ -13,6 +13,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+
+import java.awt.datatransfer.StringSelection
 
 @Composable
 fun EditMode() {
@@ -67,9 +71,12 @@ fun EditMode() {
   }
 
   Button(onClick = {
-    val result:String = generateCode(curves)
+    val result: String = generateCode(curves)
+    pasteToClipboard(result)
   }) {
     Text("copy to clipboard")
   }
 }
+
+
 

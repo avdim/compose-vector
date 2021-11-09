@@ -25,10 +25,6 @@ fun main() = application {
   }
 }
 
-fun GeneratedScope.generatedCode() {
-  drawCurve(listOf(Pt(0, 0), Pt(100, 100), Pt(200, 100)))
-}
-
 interface GeneratedScope {
   fun drawCurve(points: List<Pt>)
 }

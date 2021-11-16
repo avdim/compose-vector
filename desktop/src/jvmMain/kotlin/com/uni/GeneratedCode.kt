@@ -1,5 +1,6 @@
 package com.uni
 
+import com.uni.serializable.Pt
 import kotlin.Unit
 
 public fun GeneratedScope.generatedCode(): Unit {

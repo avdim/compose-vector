@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.uni.serializable.Pt
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -24,6 +25,7 @@ fun main() = application {
 
 interface GeneratedScope {
   fun drawCurve(points: List<Pt>)
+  fun drawRect(start: Pt, end: Pt)
 }
 
 inline fun Path.moveTo(x: Int, y: Int) {
@@ -35,10 +37,10 @@ inline fun Path.lineTo(x: Int, y: Int) {
 }
 
 @Composable
-fun GeneratedLayer(editable:Boolean = false, lambda:GeneratedScope.()->Unit) {
+fun GeneratedLayer(editable: Boolean = false, lambda: GeneratedScope.() -> Unit) {
   if (editable) {
-    EditMode(lambda)
+    EditMode(lambda = lambda)
   } else {
-    DisplayMode(lambda)
+    DisplayMode(lambda = lambda)
   }
 }

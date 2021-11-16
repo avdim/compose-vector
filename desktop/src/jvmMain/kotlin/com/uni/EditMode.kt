@@ -5,25 +5,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Button
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.key.Key.Companion.Window
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import java.awt.Toolkit
-import java.awt.datatransfer.Clipboard
-
-import java.awt.datatransfer.StringSelection
 
 @Composable
 fun EditMode(lambda: GeneratedScope.() -> Unit) {
@@ -49,11 +42,7 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
         editPanelIsOpen = false
       }) {
       Column {
-        Button(onClick = {
-          curves = emptyList()
-        }) {
-          Text("Clear all")
-        }
+        TextButton("Clear all") { curves = emptyList() }
       }
     }
   }
@@ -96,17 +85,12 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
     )
   }
   Row() {
-    Button(onClick = {
+    TextButton("copy to clipboard") {
       val result: String = generateCode(curves)
       pasteToClipboard(result)
-    }) {
-      Text("copy to clipboard")
     }
-
-    Button(onClick = {
+    TextButton("Edit") {
       editPanelIsOpen = !editPanelIsOpen
-    }) {
-      Text("Edit")
     }
   }
 

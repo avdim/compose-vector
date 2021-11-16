@@ -5,8 +5,8 @@ import com.squareup.kotlinpoet.*
 @OptIn(ExperimentalStdlibApi::class)
 fun generateCode(curves: List<Curve>): String {
 
-  val file = FileSpec.builder("com.uni", "GeneratedCode").addFunction(
-    FunSpec.builder("generatedCode")
+//  val file = FileSpec.builder("com.uni", "GeneratedCode").addFunction(
+    val genFun = FunSpec.builder("generatedCode")
       .receiver(typeNameOf<GeneratedScope>())
 //    .addParameter("args", String::class, KModifier.VARARG)
       .apply {
@@ -25,7 +25,8 @@ fun generateCode(curves: List<Curve>): String {
         }
       }
       .build()
-  ).build()
+//  ).build()
 
-  return file.toString()
+  return genFun.body.toString()
+//  return file.toString()
 }

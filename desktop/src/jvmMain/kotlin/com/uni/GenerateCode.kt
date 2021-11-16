@@ -25,7 +25,7 @@ fun generateCode(elements: List<Element>): String {
                 append(")")
               }
               is Element.Rect -> {
-                append("rect(")
+                append("drawRect(")
                 append("${e.start.constructorStr},")
                 append("${e.end.constructorStr},")
                 append(")")

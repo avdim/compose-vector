@@ -1,6 +1,8 @@
 package com.uni
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Button
@@ -11,8 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.key.Key.Companion.Window
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 
@@ -20,7 +27,7 @@ import java.awt.datatransfer.StringSelection
 
 @Composable
 fun EditMode(lambda: GeneratedScope.() -> Unit) {
-
+  // Init
   val generatedCurves: MutableList<Curve> = mutableListOf()
   val generatedScope = object : GeneratedScope {
     override fun drawCurve(points: List<Pt>) {
@@ -29,8 +36,27 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
   }
   generatedScope.lambda()
 
+  // State
   var curves by remember { mutableStateOf<List<Curve>>(generatedCurves) }
   var currentCurve by remember { mutableStateOf<Curve?>(null) }
+
+  // UI
+  var editPanelIsOpen by remember { mutableStateOf(false) }
+  if (editPanelIsOpen) {
+    Window(
+      state = WindowState(width = 200.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
+      onCloseRequest = {
+        editPanelIsOpen = false
+      }) {
+      Column {
+        Button(onClick = {
+          curves = emptyList()
+        }) {
+          Text("Clear all")
+        }
+      }
+    }
+  }
 
   Canvas(
     Modifier.wrapContentSize(Alignment.Center)
@@ -69,14 +95,21 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
       style = Stroke(width = 2f)
     )
   }
+  Row() {
+    Button(onClick = {
+      val result: String = generateCode(curves)
+      pasteToClipboard(result)
+    }) {
+      Text("copy to clipboard")
+    }
 
-  Button(onClick = {
-    val result: String = generateCode(curves)
-    pasteToClipboard(result)
-  }) {
-    Text("copy to clipboard")
+    Button(onClick = {
+      editPanelIsOpen = !editPanelIsOpen
+    }) {
+      Text("Edit")
+    }
   }
-}
 
+}
 
 

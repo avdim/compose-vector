@@ -19,7 +19,7 @@ import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
 
 @Composable
-fun EditMode() {
+fun EditMode(lambda: GeneratedScope.() -> Unit) {
 
   val generatedCurves: MutableList<Curve> = mutableListOf()
   val generatedScope = object : GeneratedScope {
@@ -27,7 +27,7 @@ fun EditMode() {
       generatedCurves.add(Curve(points))
     }
   }
-  generatedScope.generatedCode()
+  generatedScope.lambda()
 
   var curves by remember { mutableStateOf<List<Curve>>(generatedCurves) }
   var currentCurve by remember { mutableStateOf<Curve?>(null) }

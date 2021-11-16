@@ -21,7 +21,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 
 @Composable
-fun DisplayMode() {
+fun DisplayMode(lambda: GeneratedScope.() -> Unit) {
     Canvas(
         Modifier.wrapContentSize(Alignment.Center)
             .fillMaxSize()
@@ -43,6 +43,6 @@ fun DisplayMode() {
                 }
             }
         }
-        generatedScope.generatedCode()
+        generatedScope.lambda()
     }
 }

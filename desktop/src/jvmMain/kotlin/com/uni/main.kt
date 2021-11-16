@@ -1,14 +1,13 @@
 package com.uni
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-
-const val EDIT_MODE = true
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
@@ -17,10 +16,8 @@ fun main() = application {
     onCloseRequest = ::exitApplication,
     state = rememberWindowState(width = 800.dp, height = 800.dp)
   ) {
-    if (EDIT_MODE) {
-      EditMode()
-    } else {
-      DisplayMode()
+    GeneratedLayer(true) {
+      generatedCode()
     }
   }
 }
@@ -35,4 +32,13 @@ inline fun Path.moveTo(x: Int, y: Int) {
 
 inline fun Path.lineTo(x: Int, y: Int) {
   lineTo(x.toFloat(), y.toFloat())
+}
+
+@Composable
+fun GeneratedLayer(editable:Boolean = false, lambda:GeneratedScope.()->Unit) {
+  if (editable) {
+    EditMode(lambda)
+  } else {
+    DisplayMode(lambda)
+  }
 }

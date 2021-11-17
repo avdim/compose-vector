@@ -50,7 +50,7 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
 
   // State
   var savedElements by remember { mutableStateOf<List<Element>>(generatedElements) }
-  var controllerState: ControllerState by remember { mutableStateOf(ControllerState.IDLE) }
+  var controllerState: ControllerState by remember { mutableStateOf(ControllerState.CURVE) }
 
   // UI
   var editPanelIsOpen by remember { mutableStateOf(false) }

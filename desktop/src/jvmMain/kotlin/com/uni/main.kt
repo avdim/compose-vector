@@ -18,19 +18,9 @@ fun main() {
       onCloseRequest = ::exitApplication,
       state = rememberWindowState(width = 800.dp, height = 800.dp)
     ) {
-      GeneratedLayer(true) {
+      GeneratedLayer {
         generatedCode()
       }
     }
-  }
-}
-
-//TODO expect/actual
-@Composable
-fun GeneratedLayer(editable: Boolean = false, lambda: GeneratedScope.() -> Unit) {
-  if (editable) {
-    EditMode(lambda = lambda)
-  } else {
-    DisplayMode(lambda = lambda)
   }
 }

@@ -56,7 +56,7 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
   var editPanelIsOpen by remember { mutableStateOf(false) }
   if (editPanelIsOpen) {
     Window(
-      state = WindowState(width = 200.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
+      state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
       onCloseRequest = {
         editPanelIsOpen = false
       }) {

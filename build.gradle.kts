@@ -1,44 +1,32 @@
 plugins {
-  kotlin("multiplatform") version "1.5.31" apply false
+  kotlin("multiplatform") version KOTLIN_VERSION apply false
 //  kotlin("plugin.serialization") version KOTLIN_VERSION apply false
-  id("org.jetbrains.compose") version "1.0.0-beta5" apply false
+  id("org.jetbrains.compose") version COMPOSE_VERSION apply false
 }
 
-//buildscript {
-//  repositories {
-//    google()
-//  }
-//}
-
-allprojects {//todo allprojects bad?
-//  buildDir = File("/dev/shm/$name")
-//  version = "1.0"
+buildscript {
   repositories {
-    mavenLocal {
-      url = uri("${rootProject.projectDir}/save_dependencies")
-      // com/jetbrains/intellij/java/java-compiler-ant-tasks/211.7628.21.2111.7579519/java-compiler-ant-tasks-211.7628.21.2111.7579519.pom
-    }
-    mavenCentral()
-    maven { setUrl("https://dl.bintray.com/kotlin/kotlinx") }
-    //maven { setUrl("https://dl.bintray.com/kotlin/exposed") }
-    maven { setUrl("https://kotlin.bintray.com/ktor") }
-    maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
+    mavenCentral()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+  }
 
-//    if (USE_KOTLIN_DEV_REPOSITORY) {
-//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
-//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-//      maven { setUrl("https://dl.bintray.com/kotlin/kotlinx") }
-//      maven { setUrl("https://dl.bintray.com/kotlin/kotlin-js-wrappers") }
-//    }
+  dependencies {
+    classpath("org.jetbrains.compose:compose-gradle-plugin:1.0.0-beta5")
+    classpath("com.android.tools.build:gradle:4.1.0")
+  }
+}
+
+allprojects {
+  repositories {
+    google()
+    mavenCentral()
+    maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
   }
   tasks.withType(AbstractTestTask::class) {
     testLogging {
       showStandardStreams = true
       events("passed", "failed")
     }
-  }
-  tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
   }
 }

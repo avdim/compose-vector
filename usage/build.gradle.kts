@@ -10,6 +10,7 @@ kotlin {
   sourceSets {
     named("commonMain") {
       dependencies {
+        implementation(project(":lib"))
         api(compose.runtime)
         api(compose.foundation)
         api(compose.material)
@@ -27,6 +28,12 @@ kotlin {
         implementation(kotlin("test"))
       }
     }
+  }
+}
+
+compose.desktop {
+  application {
+    mainClass = "com.uni.MainKt"
   }
 }
 

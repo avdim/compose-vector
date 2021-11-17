@@ -19,7 +19,7 @@ val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
 infix operator fun Pt.minus(other: Pt): Pt = Pt(x - other.x, y - other.y)
 
 @Composable
-fun DisplayMode(modifier:Modifier = Modifier, lambda: GeneratedScope.() -> Unit) {
+fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
   Canvas(
     modifier.wrapContentSize(Alignment.Center)
       .fillMaxSize()

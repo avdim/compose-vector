@@ -34,7 +34,7 @@ enum class ControllerState() {
 }
 
 @Composable
-fun EditMode(lambda: GeneratedScope.() -> Unit) {
+fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   // Init
   val generatedElements: MutableList<Element> = mutableListOf()
   val generatedScope = object : GeneratedScope {
@@ -140,7 +140,7 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
   }
 
   DisplayMode(
-    modifier = Modifier.pointerInput(Unit) {
+    modifier = modifier.pointerInput(Unit) {
       while (true) {
         val event = awaitPointerEventScope { awaitPointerEvent() }
         val point = event.mouseEvent?.point
@@ -188,7 +188,6 @@ fun EditMode(lambda: GeneratedScope.() -> Unit) {
 }
 
 val Point.pt get() = Pt(x, y)
-
 
 fun toByteArray(bitmap: BufferedImage): ByteArray {
   val baos = ByteArrayOutputStream()

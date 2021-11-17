@@ -5,5 +5,5 @@ import androidx.compose.ui.Modifier
 
 @Composable
 actual fun GeneratedLayer(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
-  EditMode(modifier, lambda)
+  DisplayMode(modifier, lambda = lambda)
 }

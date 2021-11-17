@@ -8,6 +8,13 @@ kotlin {
     withJava()
   }
   sourceSets {
+    named("commonMain") {
+      dependencies {
+        api(compose.runtime)
+        api(compose.foundation)
+        api(compose.material)
+      }
+    }
     named("jvmMain") {
       dependencies {
         implementation(project(":clipboard"))

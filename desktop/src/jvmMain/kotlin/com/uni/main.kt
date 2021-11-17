@@ -25,19 +25,7 @@ fun main() {
   }
 }
 
-interface GeneratedScope {
-  fun drawCurve(points: List<Pt>)
-  fun drawRect(start: Pt, end: Pt)
-}
-
-inline fun Path.moveTo(x: Int, y: Int) {
-  moveTo(x.toFloat(), y.toFloat())
-}
-
-inline fun Path.lineTo(x: Int, y: Int) {
-  lineTo(x.toFloat(), y.toFloat())
-}
-
+//TODO expect/actual
 @Composable
 fun GeneratedLayer(editable: Boolean = false, lambda: GeneratedScope.() -> Unit) {
   if (editable) {

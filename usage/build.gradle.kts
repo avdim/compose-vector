@@ -10,10 +10,10 @@ kotlin {
   sourceSets {
     named("commonMain") {
       dependencies {
-        implementation(project(":lib"))
-        api(compose.runtime)
-        api(compose.foundation)
-        api(compose.material)
+        api(project(":lib"))
+//        api(compose.runtime)
+//        api(compose.foundation)
+//        api(compose.material)
       }
     }
     named("jvmMain") {
@@ -33,7 +33,7 @@ kotlin {
 
 compose.desktop {
   application {
-    mainClass = "com.uni.MainKt"
+    mainClass = "com.usage.MainKt"
   }
 }
 

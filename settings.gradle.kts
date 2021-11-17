@@ -25,3 +25,4 @@ rootProject.name = "compose-vector"
 include("lib")
 include("clipboard")
 include("usage")
+include("android")

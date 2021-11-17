@@ -13,7 +13,6 @@ import com.uni.serializable.Pt
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
 fun main() {
-  Temp().hello()
   application {
     Window(
       onCloseRequest = ::exitApplication,

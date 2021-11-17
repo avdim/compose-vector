@@ -38,13 +38,7 @@ allprojects {//todo allprojects bad?
       events("passed", "failed")
     }
   }
-  //todo check difference if use afterEvaluate { tasks... }
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
-//    if (COMPOSE_WORKAROUND) {
-//      kotlinOptions {
-//        freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true")
-//      }
-//    }
   }
 }

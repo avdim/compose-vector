@@ -12,13 +12,16 @@ import com.uni.serializable.Pt
 
 @ExperimentalFoundationApi
 @ExperimentalComposeUiApi
-fun main() = application {
-  Window(
-    onCloseRequest = ::exitApplication,
-    state = rememberWindowState(width = 800.dp, height = 800.dp)
-  ) {
-    GeneratedLayer(true) {
-      generatedCode()
+fun main() {
+  Temp().hello()
+  application {
+    Window(
+      onCloseRequest = ::exitApplication,
+      state = rememberWindowState(width = 800.dp, height = 800.dp)
+    ) {
+      GeneratedLayer(true) {
+        generatedCode()
+      }
     }
   }
 }

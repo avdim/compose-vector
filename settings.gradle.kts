@@ -23,3 +23,4 @@ pluginManagement {
 rootProject.name = "compose-vector"
 //enableFeaturePreview("GRADLE_METADATA")
 include("desktop")
+include("clipboard")

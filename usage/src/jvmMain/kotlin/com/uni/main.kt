@@ -18,9 +18,7 @@ fun main() {
       onCloseRequest = ::exitApplication,
       state = rememberWindowState(width = 800.dp, height = 800.dp)
     ) {
-      GeneratedLayer {
-        generatedCode()
-      }
+      UsageInCommon()
     }
   }
 }

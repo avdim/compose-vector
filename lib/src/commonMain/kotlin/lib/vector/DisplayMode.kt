@@ -9,8 +9,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import lib.vector.utils.lineTo
+import lib.vector.utils.moveTo
+import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
 
 private val Pt.size: Size get() = Size(x.absoluteValue.toFloat(), y.absoluteValue.toFloat())
@@ -42,6 +46,10 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
 
       override fun drawRect(start: Pt, end: Pt) {
         drawRect(color = Color.Yellow, topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
+      }
+
+      override fun drawBitmap(x:Int, y:Int, byteArray: ByteArray) {
+        drawImage(image = byteArray.toImageBitmap(), topLeft = Offset(x.toFloat(), y.toFloat()))
       }
     }
     generatedScope.lambda()

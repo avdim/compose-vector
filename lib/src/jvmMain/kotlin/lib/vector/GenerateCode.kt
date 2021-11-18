@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.*
 import lib.vector.Element
 import lib.vector.Pt
 import lib.vector.GeneratedScope
+import lib.vector.utils.base64
 
 @OptIn(ExperimentalStdlibApi::class)
 fun generateCode(elements: List<Element>): String {
@@ -29,6 +30,15 @@ fun generateCode(elements: List<Element>): String {
                 append("drawRect(")
                 append("${e.start.constructorStr},")
                 append("${e.end.constructorStr},")
+                append(")")
+              }
+              is Element.Bitmap -> {
+                append("drawBitmap(")
+                append(e.x)
+                append(",")
+                append(e.y)
+                append(",")
+                append("\"" + e.byteArray.base64 + "\"")
                 append(")")
               }
             }

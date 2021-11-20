@@ -64,6 +64,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
   var selectedControllerIndex by remember { mutableStateOf(1) }
   val controllerState: ControllerState by derivedStateOf { controllers.get(selectedControllerIndex) }
+  fun replaceChangeOptions(lambda:()->DrawOptions) {
+    controllers = controllers.toMutableList().also {
+      it[selectedControllerIndex] = it[selectedControllerIndex].copy(
+        options = lambda()
+      )
+    }
+  }
 
   // UI
   var editPanelIsOpen by remember { mutableStateOf(true) }
@@ -102,18 +109,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             }
             is DrawOptions.Img -> {
               TextButton("get clipboard image") {
-                val img: BufferedImage? = try {
-                  getClipboardImage()
-                } catch (t: Throwable) {
-                  println("exception in getClipboardImage")
-                  null
-                }
+                val img: BufferedImage? = getClipboardImage()
                 if (img != null) {
-                  controllers = controllers.toMutableList().also {//todo extract function
-                    it[selectedControllerIndex] = it[selectedControllerIndex].copy(
-                      options = options.copy(
-                        image = img.toComposeImageBitmap()
-                      )
+                  replaceChangeOptions {
+                    options.copy(
+                      image = img.toComposeImageBitmap()
                     )
                   }
                 }

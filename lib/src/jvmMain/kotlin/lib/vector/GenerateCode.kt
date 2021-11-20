@@ -11,6 +11,14 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
       .receiver(typeNameOf<GeneratedScope>())
 //    .addParameter("args", String::class, KModifier.VARARG)
       .apply {
+        mapIdToPoint.entries.forEach {
+          val name = it.key.name
+          if(name != null) {
+            addStatement(buildString {
+              append("val $name by mkPt(${it.value.x}, ${it.value.y})")
+            })
+          }
+        }
         elements.forEach { e ->
           addStatement(buildString {
             when(e) {
@@ -19,7 +27,7 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
                 append("${e.color.literalStr},")
                 append("listOf(")
                 e.points.forEach {
-                  append("${it.pt(mapIdToPoint).constructorStr},")
+                  append("${it.constructorPtOrLink(mapIdToPoint)},")
                 }
                 append(")")
                 append(")")
@@ -27,13 +35,13 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
               is Element.Rect -> {
                 append("drawRect(")
                 append("${e.color.literalStr},")
-                append("${e.start.pt(mapIdToPoint).constructorStr},")
-                append("${e.end.pt(mapIdToPoint).constructorStr},")
+                append("${e.start.constructorPtOrLink(mapIdToPoint)},")
+                append("${e.end.constructorPtOrLink(mapIdToPoint)},")
                 append(")")
               }
               is Element.Bitmap -> {
                 append("drawBitmap(")
-                append("${e.topLeft.pt(mapIdToPoint).constructorStr},")
+                append("${e.topLeft.constructorPtOrLink(mapIdToPoint)},")
                 append("\"" + e.byteArray.base64 + "\"")
                 append(")")
               }
@@ -48,7 +56,6 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
 //  return file.toString()
 }
 
-private val Pt.constructorStr: String
-  get() = "Pt($x, $y)"
+private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String = if (name != null) name else pt(map).run { "Pt($x, $y)" }
 
 private val ULong.literalStr:String get() = "0x" + toString(radix = 16) + "uL"

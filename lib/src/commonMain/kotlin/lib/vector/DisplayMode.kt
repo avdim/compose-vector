@@ -28,7 +28,7 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
       .fillMaxSize()
   ) {
     val generatedScope = object : GeneratedScope {
-      override fun drawCurve(points: List<Pt>) {
+      override fun drawCurve(color:ULong, points: List<Pt>) {
         if (points.isNotEmpty()) {
           drawPath(
             path = Path().apply {
@@ -38,14 +38,14 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
                 lineTo(it.x, it.y)
               }
             },
-            Color.Blue,
+            Color(color),
             style = Stroke(width = 2f)
           )
         }
       }
 
-      override fun drawRect(start: Pt, end: Pt) {
-        drawRect(color = Color.Yellow, topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
+      override fun drawRect(color:ULong, start: Pt, end: Pt) {
+        drawRect(color = Color(color), topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
       }
 
       override fun drawBitmap(x:Int, y:Int, byteArray: ByteArray) {

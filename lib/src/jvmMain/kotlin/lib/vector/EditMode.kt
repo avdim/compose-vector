@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -23,8 +24,8 @@ import java.awt.image.BufferedImage
 
 sealed class DrawOptions {
   class Idle:DrawOptions()
-  data class Curve(val todoData:String = "temp"):DrawOptions()
-  data class Rect(val todoData:String = "temp"):DrawOptions()
+  data class Curve(val color:ULong = Color.Blue.value):DrawOptions()//t
+  data class Rect(val color:ULong = Color.Yellow.value):DrawOptions()
   data class Img(val image: ImageBitmap? = null):DrawOptions()
 }
 
@@ -36,12 +37,12 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   // Init
   val generatedElements: MutableList<Element> = mutableListOf()
   val generatedScope = object : GeneratedScope {
-    override fun drawCurve(points: List<Pt>) {
-      generatedElements.add(Element.Curve(points))
+    override fun drawCurve(color:ULong, points: List<Pt>) {
+      generatedElements.add(Element.Curve(color, points))
     }
 
-    override fun drawRect(start: Pt, end: Pt) {
-      generatedElements.add(Element.Rect(start, end))
+    override fun drawRect(color:ULong, start: Pt, end: Pt) {
+      generatedElements.add(Element.Rect(color, start, end))
     }
 
     override fun drawBitmap(x:Int, y:Int, byteArray: ByteArray) {
@@ -98,14 +99,26 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           }
         }
         Column {
-          Text("Settings:")
+          Text("${controllerState.name} settings:")
           val options = controllerState.options
           when (options) {
             is DrawOptions.Curve -> {
-              Text("Curve option")
+              ColorPicker(options.color) {
+                replaceChangeOptions {
+                  options.copy(
+                    color = it
+                  )
+                }
+              }
             }
             is DrawOptions.Rect -> {
-              Text("Rect options")
+              ColorPicker(options.color) {
+                replaceChangeOptions {
+                  options.copy(
+                    color = it
+                  )
+                }
+              }
             }
             is DrawOptions.Img -> {
               TextButton("get clipboard image") {
@@ -141,12 +154,12 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         null
       }
       is DrawOptions.Curve -> {
-        Element.Curve(points = currentPoints.orEmpty())
+        Element.Curve(options.color, points = currentPoints.orEmpty())
       }
       is DrawOptions.Rect -> {
         val points = currentPoints
         if (points != null && points.size >= 2) {
-          Element.Rect(points.first(), points.last())
+          Element.Rect(options.color, points.first(), points.last())
         } else {
           null
         }
@@ -211,10 +224,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     (savedElements + listOfNotNull(currentElement)).forEach { e ->
       when (e) {
         is Element.Curve -> {
-          drawCurve(e.points)
+          drawCurve(e.color, e.points)
         }
         is Element.Rect -> {
-          drawRect(e.start, e.end)
+          drawRect(e.color, e.start, e.end)
         }
         is Element.Bitmap -> {
           drawBitmap(e.x, e.y, e.byteArray)
@@ -236,3 +249,17 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
 val Point.pt get() = Pt(x, y)
 
+@Composable
+fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
+  Column {
+    TextButton("Blue") {
+      onChageColor(Color.Blue.value)
+    }
+    TextButton("Red") {
+      onChageColor(Color.Red.value)
+    }
+    TextButton("Yellow") {
+      onChageColor(Color.Yellow.value)
+    }
+  }
+}

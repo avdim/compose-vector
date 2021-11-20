@@ -21,12 +21,14 @@ import lib.vector.utils.toByteArray
 import java.awt.Point
 import java.awt.image.BufferedImage
 
-enum class ControllerState() {
-  IDLE,
-  CURVE,
-  RECT,
-  IMG;
+sealed class DrawOptions {
+  class Idle:DrawOptions()
+  data class Curve(val todoData:String = "temp"):DrawOptions()
+  data class Rect(val todoData:String = "temp"):DrawOptions()
+  data class Img(val image: ImageBitmap? = null):DrawOptions()
 }
+
+data class ControllerState(val name:String, val options:DrawOptions)
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
@@ -50,11 +52,21 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
   // State
   var savedElements by remember { mutableStateOf<List<Element>>(generatedElements) }
-  var controllerState: ControllerState by remember { mutableStateOf(ControllerState.CURVE) }
-  var image: ImageBitmap? by remember { mutableStateOf<ImageBitmap?>(null) }//TODO delete
+  var controllers by remember {
+    mutableStateOf(
+      listOf(
+        ControllerState("Idle", DrawOptions.Idle()),
+        ControllerState("Curve", DrawOptions.Curve()),
+        ControllerState("Rectangle", DrawOptions.Rect()),
+        ControllerState("Image", DrawOptions.Img()),
+      )
+    )
+  }
+  var selectedControllerIndex by remember { mutableStateOf(1) }
+  val controllerState: ControllerState by derivedStateOf { controllers.get(selectedControllerIndex) }
 
   // UI
-  var editPanelIsOpen by remember { mutableStateOf(false) }
+  var editPanelIsOpen by remember { mutableStateOf(true) }
   if (editPanelIsOpen) {
     Window(
       state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
@@ -63,10 +75,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }) {
       Row {
         Column {
-          TextButton("Clear") { savedElements = emptyList() }
-          ControllerState.values().forEach {
+          TextButton("Clear") { savedElements = emptyList() } // todo Are you sure?
+          controllers.forEachIndexed { index, it ->
             fun onClick() {
-              controllerState = it
+              selectedControllerIndex = index
             }
             Row(Modifier.clickable {
               onClick()
@@ -80,27 +92,41 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         }
         Column {
           Text("Settings:")
-
-          TextButton("get clipboard image") {
-            val img: BufferedImage? = try {
-              getClipboardImage()
-            } catch (t: Throwable) {
-              println("exception in getClipboardImage")
-              null
+          val options = controllerState.options
+          when (options) {
+            is DrawOptions.Curve -> {
+              Text("Curve option")
             }
-            println(img)
-            if (img != null) {
-              image = img.toComposeImageBitmap()
+            is DrawOptions.Rect -> {
+              Text("Rect options")
             }
-          }
-          val img = image
-          if (img != null) {
-            Image(
-              BitmapPainter(img),
-              contentDescription = null,
-              modifier = Modifier.size(img.width.dp, img.height.dp),
-              contentScale = ContentScale.Crop
-            )
+            is DrawOptions.Img -> {
+              TextButton("get clipboard image") {
+                val img: BufferedImage? = try {
+                  getClipboardImage()
+                } catch (t: Throwable) {
+                  println("exception in getClipboardImage")
+                  null
+                }
+                if (img != null) {
+                  controllers = controllers.toMutableList().also {//todo extract function
+                    it[selectedControllerIndex] = it[selectedControllerIndex].copy(
+                      options = options.copy(
+                        image = img.toComposeImageBitmap()
+                      )
+                    )
+                  }
+                }
+              }
+              options.image?.let {
+                Image(
+                  BitmapPainter(it),
+                  contentDescription = null,
+                  modifier = Modifier.size(it.width.dp, it.height.dp),
+                  contentScale = ContentScale.Crop
+                )
+              }
+            }
           }
         }
       }
@@ -109,14 +135,15 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
   var currentPoints by remember { mutableStateOf<List<Pt>?>(null) }
   val currentElement: Element? by derivedStateOf {
-    when (controllerState) {
-      ControllerState.IDLE -> {
+    val options = controllerState.options
+    when (options) {
+      is DrawOptions.Idle -> {
         null
       }
-      ControllerState.CURVE -> {
+      is DrawOptions.Curve -> {
         Element.Curve(points = currentPoints.orEmpty())
       }
-      ControllerState.RECT -> {
+      is DrawOptions.Rect -> {
         val points = currentPoints
         if (points != null && points.size >= 2) {
           Element.Rect(points.first(), points.last())
@@ -124,8 +151,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           null
         }
       }
-      ControllerState.IMG -> {
-        val img = image
+      is DrawOptions.Img -> {
+        val img = options.image
         val points = currentPoints
 
         if(img != null && points != null && points.isNotEmpty()) {
@@ -196,12 +223,12 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
   Row() {
-    TextButton("copy to clipboard") {
-      val result: String = generateCode(savedElements)
-      pasteToClipboard(result)
-    }
     TextButton("Edit") {
       editPanelIsOpen = !editPanelIsOpen
+    }
+    TextButton("Copy result to clipboard") {
+      val result: String = generateCode(savedElements)
+      pasteToClipboard(result)
     }
   }
 

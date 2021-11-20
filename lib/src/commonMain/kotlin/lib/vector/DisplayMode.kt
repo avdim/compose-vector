@@ -9,13 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import lib.vector.utils.lineTo
 import lib.vector.utils.moveTo
 import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
+import kotlin.reflect.KProperty
 
 private val Pt.size: Size get() = Size(x.absoluteValue.toFloat(), y.absoluteValue.toFloat())
 val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
@@ -28,6 +28,8 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
       .fillMaxSize()
   ) {
     val generatedScope = object : GeneratedScope {
+      override fun mkPt(x: Int, y: Int): MakePt = MakePt { _, _ -> Pt(x, y) }
+
       override fun drawCurve(color:ULong, points: List<Pt>) {
         if (points.isNotEmpty()) {
           drawPath(
@@ -48,8 +50,8 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
         drawRect(color = Color(color), topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
       }
 
-      override fun drawBitmap(x:Int, y:Int, byteArray: ByteArray) {
-        drawImage(image = byteArray.toImageBitmap(), topLeft = Offset(x.toFloat(), y.toFloat()))
+      override fun drawBitmap(pt:Pt, byteArray: ByteArray) {
+        drawImage(image = byteArray.toImageBitmap(), topLeft = pt.offset)
       }
     }
     generatedScope.lambda()

@@ -1,14 +1,18 @@
 package lib.vector
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -23,7 +27,7 @@ import java.awt.image.BufferedImage
 
 sealed class DrawOptions {
   class Selection:DrawOptions()
-  data class Curve(val color:ULong = Color.Blue.value):DrawOptions()//t
+  data class Curve(val color:ULong = Color.Blue.value):DrawOptions()
   data class Rect(val color:ULong = Color.Yellow.value):DrawOptions()
   data class Img(val image: ImageBitmap? = null):DrawOptions()
 }
@@ -34,23 +38,43 @@ data class ControllerState(val name:String, val options:DrawOptions)
 @Composable
 fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   // Init
+  val generatedMapIdToPoint: MutableMap<Id, Pt> = mutableMapOf()
   val generatedElements: MutableList<Element> = mutableListOf()
+  fun mapPtToId(pt: Pt): Id =
+    if (pt is PtEdit) {
+      pt.id
+    } else {
+      val id = getNextPointId()
+      generatedMapIdToPoint[id] = pt
+      id
+    }
   val generatedScope = object : GeneratedScope {
-    override fun drawCurve(color:ULong, points: List<Pt>) {
-      generatedElements.add(Element.Curve(color, points))
+    override fun mkPt(x: Int, y: Int): MakePt = MakePt { _, property ->
+      val id = getNextPointId(property.name)
+      val pt = PtEdit(x, y, id)
+      generatedMapIdToPoint[id] = pt
+      pt
     }
 
-    override fun drawRect(color:ULong, start: Pt, end: Pt) {
-      generatedElements.add(Element.Rect(color, start, end))
+    override fun drawCurve(color: ULong, points: List<Pt>) {
+      generatedElements.add(Element.Curve(
+        color = color,
+        points = points.map(::mapPtToId)
+      ))
     }
 
-    override fun drawBitmap(x:Int, y:Int, byteArray: ByteArray) {
-      generatedElements.add(Element.Bitmap(x, y, byteArray))
+    override fun drawRect(color: ULong, start: Pt, end: Pt) {
+      generatedElements.add(Element.Rect(color, mapPtToId(start), mapPtToId(end)))
+    }
+
+    override fun drawBitmap(pt: Pt, byteArray: ByteArray) {
+      generatedElements.add(Element.Bitmap(mapPtToId(pt), byteArray))
     }
   }
   generatedScope.lambda()
 
   // State
+  var mapIdToPoint: Map<Id, Pt> by remember { mutableStateOf(generatedMapIdToPoint) }
   var savedElements by remember { mutableStateOf<List<Element>>(generatedElements) }
   var controllers by remember {
     mutableStateOf(
@@ -70,6 +94,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         options = lambda()
       )
     }
+  }
+  fun addPoint(pt: Pt): Id {
+    val id = getNextPointId()
+    mapIdToPoint = mapIdToPoint + Pair(id, pt)
+    return id
   }
 
   // UI
@@ -133,7 +162,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  var currentPoints by remember { mutableStateOf<List<Pt>?>(null) }
+  var currentPoints by remember { mutableStateOf<List<Id>?>(null) }
   val currentElement: Element? by derivedStateOf {
     val options = controllerState.options
     when (options) {
@@ -157,8 +186,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
         if(img != null && points != null && points.isNotEmpty()) {
           Element.Bitmap(
-            x = points.last().x,
-            y = points.last().y,
+            points.last(),
             byteArray = img.toByteArray()
           )
         } else {
@@ -183,13 +211,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         val event = awaitPointerEventScope { awaitPointerEvent() }
         val point = event.mouseEvent?.point
         if (event.buttons.isPrimaryPressed) {
-          val previousPoints = currentPoints
+          val previousPoints: List<Id>? = currentPoints
           if (point != null) {
             if (previousPoints == null) {
-              currentPoints = listOf(point.pt)
+              currentPoints = listOf(addPoint(point.pt))
               pointerStart(point.pt)
             } else {
-              currentPoints = previousPoints + point.pt
+              currentPoints = previousPoints + addPoint(point.pt)
               pointerMove(point.pt)
             }
           }
@@ -204,18 +232,44 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   ) {
     (savedElements + listOfNotNull(currentElement)).forEach { e ->
       when (e) {
-        is Element.Curve -> drawCurve(e.color, e.points)
-        is Element.Rect -> drawRect(e.color, e.start, e.end)
-        is Element.Bitmap -> drawBitmap(e.x, e.y, e.byteArray)
+        is Element.Curve -> drawCurve(e.color, e.points.pts(mapIdToPoint))
+        is Element.Rect -> drawRect(e.color, e.start.pt(mapIdToPoint), e.end.pt(mapIdToPoint))
+        is Element.Bitmap -> drawBitmap(e.topLeft.pt(mapIdToPoint), e.byteArray)
       }
     }
   }
+
+  if (controllerState.options is DrawOptions.Selection) {
+    Canvas(
+      modifier.wrapContentSize(Alignment.Center)
+        .fillMaxSize()
+        .pointerInput(Unit) {
+          while (true) {
+            val event = awaitPointerEventScope { awaitPointerEvent() }
+            val point = event.mouseEvent?.point
+            if (event.buttons.isPrimaryPressed && point != null) {
+              val variant = mapIdToPoint.minByOrNull { point.pt distance it.value }
+              if (variant != null) {
+                mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                  set(variant.key, point.pt)
+                }
+              }
+            }
+          }
+        }
+    ) {
+      mapIdToPoint.values.forEach {
+        drawCircle(Color.Red, 5f, center = it.offset)
+      }
+    }
+  }
+
   Row() {
     TextButton("Edit") {
       editPanelIsOpen = !editPanelIsOpen
     }
     TextButton("Copy result to clipboard") {
-      val result: String = generateCode(savedElements)
+      val result: String = generateCode(savedElements, mapIdToPoint)
       pasteToClipboard(result)
     }
   }
@@ -238,3 +292,6 @@ fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
     }
   }
 }
+
+inline fun Id.pt(map:Map<Id, Pt>): Pt = map[this]!!
+inline fun Collection<Id>.pts(map:Map<Id, Pt>): List<Pt> = map { it.pt(map) }

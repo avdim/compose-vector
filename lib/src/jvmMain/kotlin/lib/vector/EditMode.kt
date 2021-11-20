@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -23,7 +22,7 @@ import java.awt.Point
 import java.awt.image.BufferedImage
 
 sealed class DrawOptions {
-  class Idle:DrawOptions()
+  class Selection:DrawOptions()
   data class Curve(val color:ULong = Color.Blue.value):DrawOptions()//t
   data class Rect(val color:ULong = Color.Yellow.value):DrawOptions()
   data class Img(val image: ImageBitmap? = null):DrawOptions()
@@ -56,7 +55,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   var controllers by remember {
     mutableStateOf(
       listOf(
-        ControllerState("Idle", DrawOptions.Idle()),
+        ControllerState("Selection", DrawOptions.Selection()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
@@ -104,31 +103,19 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           when (options) {
             is DrawOptions.Curve -> {
               ColorPicker(options.color) {
-                replaceChangeOptions {
-                  options.copy(
-                    color = it
-                  )
-                }
+                replaceChangeOptions { options.copy(color = it) }
               }
             }
             is DrawOptions.Rect -> {
               ColorPicker(options.color) {
-                replaceChangeOptions {
-                  options.copy(
-                    color = it
-                  )
-                }
+                replaceChangeOptions { options.copy(color = it) }
               }
             }
             is DrawOptions.Img -> {
               TextButton("get clipboard image") {
                 val img: BufferedImage? = getClipboardImage()
                 if (img != null) {
-                  replaceChangeOptions {
-                    options.copy(
-                      image = img.toComposeImageBitmap()
-                    )
-                  }
+                  replaceChangeOptions { options.copy(image = img.toComposeImageBitmap()) }
                 }
               }
               options.image?.let {
@@ -150,7 +137,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   val currentElement: Element? by derivedStateOf {
     val options = controllerState.options
     when (options) {
-      is DrawOptions.Idle -> {
+      is DrawOptions.Selection -> {
         null
       }
       is DrawOptions.Curve -> {
@@ -181,14 +168,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  fun pointerStart(pt: Pt) {
-
-  }
-
-  fun pointerMove(pt: Pt) {
-
-  }
-
+  fun pointerStart(pt: Pt) {}
+  fun pointerMove(pt: Pt) {}
   fun pointerEnd(pt: Pt?) {
     val e = currentElement
     if (e != null) {
@@ -223,15 +204,9 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   ) {
     (savedElements + listOfNotNull(currentElement)).forEach { e ->
       when (e) {
-        is Element.Curve -> {
-          drawCurve(e.color, e.points)
-        }
-        is Element.Rect -> {
-          drawRect(e.color, e.start, e.end)
-        }
-        is Element.Bitmap -> {
-          drawBitmap(e.x, e.y, e.byteArray)
-        }
+        is Element.Curve -> drawCurve(e.color, e.points)
+        is Element.Rect -> drawRect(e.color, e.start, e.end)
+        is Element.Bitmap -> drawBitmap(e.x, e.y, e.byteArray)
       }
     }
   }

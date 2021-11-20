@@ -61,43 +61,47 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       onCloseRequest = {
         editPanelIsOpen = false
       }) {
-      Column {
-        TextButton("Clear all") { savedElements = emptyList() }
-        ControllerState.values().forEach {
-          fun onClick() {
-            controllerState = it
-          }
-          Row(Modifier.clickable {
-            onClick()
-          }) {
-            RadioButton(controllerState == it, onClick = {
+      Row {
+        Column {
+          TextButton("Clear") { savedElements = emptyList() }
+          ControllerState.values().forEach {
+            fun onClick() {
+              controllerState = it
+            }
+            Row(Modifier.clickable {
               onClick()
-            })
-            Text(it.name)
+            }) {
+              RadioButton(controllerState == it, onClick = {
+                onClick()
+              })
+              Text(it.name)
+            }
           }
         }
+        Column {
+          Text("Settings:")
 
-        TextButton("get clipboard image") {
-          val img: BufferedImage? = try {
-            getClipboardImage()
-          } catch (t: Throwable) {
-            println("exception in getClipboardImage")
-            null
+          TextButton("get clipboard image") {
+            val img: BufferedImage? = try {
+              getClipboardImage()
+            } catch (t: Throwable) {
+              println("exception in getClipboardImage")
+              null
+            }
+            println(img)
+            if (img != null) {
+              image = img.toComposeImageBitmap()
+            }
           }
-          println(img)
+          val img = image
           if (img != null) {
-            image = img.toComposeImageBitmap()
+            Image(
+              BitmapPainter(img),
+              contentDescription = null,
+              modifier = Modifier.size(img.width.dp, img.height.dp),
+              contentScale = ContentScale.Crop
+            )
           }
-        }
-
-        val img = image
-        if (img != null) {
-          Image(
-            BitmapPainter(img),
-            contentDescription = null,
-            modifier = Modifier.size(img.width.dp, img.height.dp),
-            contentScale = ContentScale.Crop
-          )
         }
       }
     }

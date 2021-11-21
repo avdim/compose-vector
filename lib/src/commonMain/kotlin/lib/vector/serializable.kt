@@ -5,15 +5,16 @@ import kotlin.math.absoluteValue
 import kotlin.math.sqrt
 
 interface Pt {
-  val x: Int
-  val y: Int
+  val x: Float
+  val y: Float
 }
 
-fun Pt(x: Int, y: Int) = PtDisplay(x, y)
-data class PtDisplay(override val x: Int, override val y: Int):Pt
+fun Pt(x: Float, y: Float) = PtDisplay(x, y)
+fun Pt(x: Int, y: Int) = PtDisplay(x.toFloat(), y.toFloat())
+data class PtDisplay(override val x: Float, override val y: Float):Pt
 
 data class Id(val value: Long, val name: String? = null)
-data class PtEdit(override val x: Int, override val y: Int, val id:Id):Pt
+data class PtEdit(override val x: Float, override val y: Float, val id:Id):Pt
 
 infix fun Pt.distance(other: Pt): Double {
   val dx = (other.x - x).absoluteValue.toDouble()

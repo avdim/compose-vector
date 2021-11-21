@@ -50,7 +50,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       id
     }
   val generatedScope = object : GeneratedScope {
-    override fun mkPt(x: Int, y: Int): MakePt = MakePt { _, property ->
+    override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, property ->
       val id = getNextPointId(property.name)
       val pt = PtEdit(x, y, id)
       generatedMapIdToPoint[id] = pt
@@ -281,7 +281,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
 }
 
-val Point.pt get() = Pt(x, y)
+val Point.pt get() = Pt(x.toFloat(), y.toFloat())
 
 @Composable
 fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {

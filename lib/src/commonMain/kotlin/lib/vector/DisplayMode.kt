@@ -22,13 +22,13 @@ private val Pt.size: Size get() = Size(x.absoluteValue.toFloat(), y.absoluteValu
 val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
 infix operator fun Pt.minus(other: Pt): Pt = Pt(x - other.x, y - other.y)
 infix operator fun Pt.plus(other: Pt): Pt = Pt(x + other.x, y + other.y)
-infix operator fun Pt.times(scale: Float): Pt = Pt((x * scale).toInt(), (y * scale).toInt())
+infix operator fun Pt.times(scale: Float): Pt = Pt(x * scale, y * scale)
 
 @Composable
 fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
   Canvas(modifier.wrapContentSize(Alignment.Center).fillMaxSize()) {
     val generatedScope = object : GeneratedScope {
-      override fun mkPt(x: Int, y: Int): MakePt = MakePt { _, _ -> Pt(x, y) }
+      override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, _ -> Pt(x, y) }
 
       override fun drawCurve(color:ULong, points: List<Pt>) {
         if (points.isNotEmpty()) {

@@ -5,7 +5,6 @@ import lib.vector.utils.base64
 
 @OptIn(ExperimentalStdlibApi::class)
 fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
-
 //  val file = FileSpec.builder("com.uni", "GeneratedCode").addFunction(
     val genFun = FunSpec.builder("generatedCode")
       .receiver(typeNameOf<GeneratedScope>())

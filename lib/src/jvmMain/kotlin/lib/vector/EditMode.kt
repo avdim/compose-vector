@@ -111,7 +111,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }) {
       Row {
         Column {
-          TextButton("Clear") { savedElements = emptyList() } // todo Are you sure?
+          TextButton("Clear") {
+            // todo Are you sure?
+            savedElements = emptyList()
+            mapIdToPoint = emptyMap()
+          }
           controllers.forEachIndexed { index, it ->
             fun onClick() {
               selectedControllerIndex = index

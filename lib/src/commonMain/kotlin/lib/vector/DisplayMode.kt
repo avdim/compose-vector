@@ -11,22 +11,22 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 import lib.vector.utils.lineTo
 import lib.vector.utils.moveTo
 import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
-import kotlin.reflect.KProperty
 
 private val Pt.size: Size get() = Size(x.absoluteValue.toFloat(), y.absoluteValue.toFloat())
 val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
 infix operator fun Pt.minus(other: Pt): Pt = Pt(x - other.x, y - other.y)
+infix operator fun Pt.plus(other: Pt): Pt = Pt(x + other.x, y + other.y)
+infix operator fun Pt.times(scale: Float): Pt = Pt((x * scale).toInt(), (y * scale).toInt())
 
 @Composable
 fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
-  Canvas(
-    modifier.wrapContentSize(Alignment.Center)
-      .fillMaxSize()
-  ) {
+  Canvas(modifier.wrapContentSize(Alignment.Center).fillMaxSize()) {
     val generatedScope = object : GeneratedScope {
       override fun mkPt(x: Int, y: Int): MakePt = MakePt { _, _ -> Pt(x, y) }
 
@@ -47,11 +47,15 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
       }
 
       override fun drawRect(color:ULong, start: Pt, end: Pt) {
-        drawRect(color = Color(color), topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
+        rotate(degrees = 45f, pivot = start.offset) {
+          drawRect(color = Color(color), topLeft = Offset(minOf(start.x, end.x).toFloat(), minOf(start.y, end.y).toFloat()), size = (end - start).size)
+        }
       }
 
       override fun drawBitmap(pt:Pt, byteArray: ByteArray) {
-        drawImage(image = byteArray.toImageBitmap(), topLeft = pt.offset)
+        scale(2f, pivot = pt.offset) {
+          drawImage(image = byteArray.toImageBitmap(), topLeft = pt.offset)
+        }
       }
     }
     generatedScope.lambda()

@@ -36,8 +36,9 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
             path = Path().apply {
               val start = points[0]
               moveTo(start.x, start.y)
-              (points.drop(1)).forEach {
-                lineTo(it.x, it.y)
+              (points.windowed(2)).forEach { (a, b) ->
+                cubicTo(a.x.f, a.y.f, b.x.f, b.y.f, b.x.f, b.y.f)
+//                lineTo(b.x, b.y)
               }
             },
             Color(color),
@@ -61,3 +62,5 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
     generatedScope.lambda()
   }
 }
+
+inline val Int.f get() = toFloat()

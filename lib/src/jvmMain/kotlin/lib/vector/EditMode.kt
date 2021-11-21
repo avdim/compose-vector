@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -226,7 +227,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             }
           }
         } else {
-          if (currentPoints != null) {
+          if (currentPoints != null && event.keyboardModifiers.isShiftPressed.not()) {
             pointerEnd(point?.pt)
             currentPoints = null
           }

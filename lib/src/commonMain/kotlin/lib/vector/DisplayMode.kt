@@ -21,6 +21,7 @@ val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
 infix operator fun Pt.minus(other: Pt): Pt = Pt(x - other.x, y - other.y)
 infix operator fun Pt.plus(other: Pt): Pt = Pt(x + other.x, y + other.y)
 infix operator fun Pt.times(scale: Float): Pt = Pt(x * scale, y * scale)
+infix operator fun Pt.div(divider: Float): Pt = this * (1f / divider)
 
 @Composable
 fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
@@ -81,9 +82,16 @@ fun calcBezier(before: Pt, from: Pt, to: Pt, after: Pt): BezierResult {
 }
 
 class InTriangleResult(val outC: Pt, val inC: Pt)
+
+const val BEZIER_SCALE = 0.5f
 fun calcBezierInTriangle(a:Pt, b:Pt, c:Pt):InTriangleResult {
+  val ab = a.distance(b).toFloat()
+  val bc = b.distance(c).toFloat()
+  val scaleA = ab / (ab + bc + 0.001f)
+  val scaleC = bc / (ab + bc + 0.001f)
+  val direction = (c - a)
   return InTriangleResult(
-    outC = (b + (b - a) * 0.4f),
-    inC = (b - (c - b) * 0.3f),
+    outC = b + direction * scaleA * BEZIER_SCALE,
+    inC = b - direction * scaleC * BEZIER_SCALE,
   )
 }

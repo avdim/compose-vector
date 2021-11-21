@@ -289,8 +289,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               val idA = curve.bezierRef[a]?.refA
               val idB = curve.bezierRef[b]?.refB
               val result = calcBezier(before.pt(map), a.pt(map), b.pt(map), after.pt(map))
-              val bezierA = idA?.pt(map) ?: result.bezierA
-              val bezierB = idB?.pt(map) ?: result.bezierB
+              val bezierA = idA?.pt(map) ?: result.refFrom
+              val bezierB = idB?.pt(map) ?: result.refTo
               add(
                 BezierPt(bezierA.x, bezierA.y, idA, curve, a, true)
               )

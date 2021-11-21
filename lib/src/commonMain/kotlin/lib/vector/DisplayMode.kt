@@ -34,17 +34,17 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
             path = Path().apply {
               val start = points[0]
               moveTo(start.x, start.y)
-              (points.take(1) + points + points.takeLast(1)).windowed(4).forEach { (before, a, b, after) ->
-                val savedBezierA = bezierRef[a]?.refA
-                val savedBezierB = bezierRef[b]?.refB
-                val result = calcBezier(before, a, b, after)
-                val bezierA: Pt = savedBezierA ?: result.bezierA
-                val bezierB: Pt = savedBezierB ?: result.bezierB
+              (points.take(1) + points + points.takeLast(1)).windowed(4).forEach { (before, from, to, after) ->
+                val savedBezierA = bezierRef[from]?.refA
+                val savedBezierB = bezierRef[to]?.refB
+                val result = calcBezier(before, from, to, after)
+                val bezierA: Pt = savedBezierA ?: result.refFrom
+                val bezierB: Pt = savedBezierB ?: result.refTo
 
                 drawCircle(Color.Red, 2f, bezierA.offset)
                 drawCircle(Color.Green, 2f, bezierB.offset)
-                cubicTo(bezierA.x, bezierA.y, bezierB.x, bezierB.y, b.x, b.y)
-//                lineTo(b.x, b.y)
+                cubicTo(bezierA.x, bezierA.y, bezierB.x, bezierB.y, to.x, to.y)
+//                lineTo(to.x, to.y)
               }
             },
             Color(color),
@@ -71,11 +71,19 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
 
 inline val Int.f get() = toFloat()
 
-class BezierResult(val bezierA: Pt, val bezierB: Pt)
+class BezierResult(val refFrom: Pt, val refTo: Pt)
 
-fun calcBezier(before: Pt, a: Pt, b: Pt, after: Pt): BezierResult {
+fun calcBezier(before: Pt, from: Pt, to: Pt, after: Pt): BezierResult {
   return BezierResult(
-    bezierA = (a + (a - before) * 0.4f),
-    bezierB = (b - (after - b) * 0.3f)
+    refFrom = calcBezierInTriangle(before, from, to).outC,
+    refTo = calcBezierInTriangle(from, to, after).inC
+  )
+}
+
+class InTriangleResult(val outC: Pt, val inC: Pt)
+fun calcBezierInTriangle(a:Pt, b:Pt, c:Pt):InTriangleResult {
+  return InTriangleResult(
+    outC = (b + (b - a) * 0.4f),
+    inC = (b - (c - b) * 0.3f),
   )
 }

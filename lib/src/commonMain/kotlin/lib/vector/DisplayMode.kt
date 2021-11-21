@@ -13,8 +13,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
-import lib.vector.utils.lineTo
-import lib.vector.utils.moveTo
 import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
 
@@ -30,33 +28,23 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
     val generatedScope = object : GeneratedScope {
       override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, _ -> Pt(x, y) }
 
-      override fun drawCurve(color:ULong, points: List<Pt>) {
+      override fun drawCurve(color:ULong, points: List<Pt>, bezierRef:Map<Pt, BezierRef>) {
         if (points.isNotEmpty()) {
           drawPath(
             path = Path().apply {
               val start = points[0]
               moveTo(start.x, start.y)
               (points.take(1) + points + points.takeLast(1)).windowed(4).forEach { (before, a, b, after) ->
-                val ra:Pt = a + (a - before) * 0.4f
-                val rb:Pt = b - (after - b) * 0.3f
-                // line before -> b move to center point a and scale 0.5f
-                // 1 (x.x - before.x) / (b.x - before.x) = (x.y - before.y) / (b.y - before.y)
-                // 2 (x.x - a.x) * (b.x - before.x) + (x.y - a.y) * (b.y - before.y) = 0
-                // 2 x.x = a.x -(x.y - a.y) * C1  // C1 = (b.y - before.y) / (b.x - before.x)
-                // 2 x.x = a.x -x.y*C1 + a.y * C1
-                // 1 (a.x -x.y*C1 + a.y * C1 - a.x) * (b.x - before.x) + (x.y - a.y) * C2 = 0 //C2  =(b.y - before.y)
-                // 1 (a.x -x.y*C1 + a.y * C1 - a.x) * (b.x - before.x) + x.y * C2 - a.y * C2 = 0
-                // 1 (C3 - x.y*C1) * (b.x - before.x) + x.y * C2 - a.y * C2 = 0// C3 = a.x + a.y * C1 - a.x
-                // 1 (x.y*C1 - C3) * (before.x - b.x) + x.y * C2 - a.y * C2 = 0
-                // 1 x.y * (C2 +  C1 * (before.x - b.x)) = C3 * (before.x - b.x) + a.y * C2
-                // 1 x.y = C3 * (before.x - b.x) + a.y * C2 / (C2 +  C1 * (before.x - b.x))
-                // 2 x.x = a.x -x.y*C1 + a.y * C1
-                //прямая ra, a, rb
-                val C1 = (b.y - before.y) / (b.x - before.x)
-                drawCircle(Color.Red, 2f, ra.offset)
-                drawCircle(Color.Green, 2f, rb.offset)
-//                cubicTo(ra.x.f, ra.y.f, rb.x.f, rb.y.f, b.x.f, b.y.f)
-                lineTo(b.x, b.y)
+                val savedBezierA = bezierRef[a]?.refA
+                val savedBezierB = bezierRef[b]?.refB
+                val result = calcBezier(before, a, b, after)
+                val bezierA: Pt = savedBezierA ?: result.bezierA
+                val bezierB: Pt = savedBezierB ?: result.bezierB
+
+                drawCircle(Color.Red, 2f, bezierA.offset)
+                drawCircle(Color.Green, 2f, bezierB.offset)
+                cubicTo(bezierA.x, bezierA.y, bezierB.x, bezierB.y, b.x, b.y)
+//                lineTo(b.x, b.y)
               }
             },
             Color(color),
@@ -82,3 +70,12 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
 }
 
 inline val Int.f get() = toFloat()
+
+class BezierResult(val bezierA: Pt, val bezierB: Pt)
+
+fun calcBezier(before: Pt, a: Pt, b: Pt, after: Pt): BezierResult {
+  return BezierResult(
+    bezierA = (a + (a - before) * 0.4f),
+    bezierB = (b - (after - b) * 0.3f)
+  )
+}

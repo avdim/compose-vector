@@ -28,6 +28,7 @@ import java.awt.image.BufferedImage
 
 sealed class DrawOptions {
   class Selection:DrawOptions()
+  class BezierReference : DrawOptions()
   data class Curve(val color:ULong = Color.Blue.value):DrawOptions()
   data class Rect(val color:ULong = Color.Yellow.value):DrawOptions()
   data class Img(val image: ImageBitmap? = null):DrawOptions()
@@ -57,10 +58,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       pt
     }
 
-    override fun drawCurve(color: ULong, points: List<Pt>) {
+    override fun drawCurve(color: ULong, points: List<Pt>, bezieRef:Map<Pt, BezierRef>) {
       generatedElements.add(Element.Curve(
         color = color,
-        points = points.map(::mapPtToId)
+        points = points.map(::mapPtToId),
+        emptyMap()//todo
       ))
     }
 
@@ -81,13 +83,14 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     mutableStateOf(
       listOf(
         ControllerState("Selection", DrawOptions.Selection()),
+        ControllerState("BezierReference", DrawOptions.BezierReference()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
       )
     )
   }
-  var selectedControllerIndex by remember { mutableStateOf(1) }
+  var selectedControllerIndex by remember { mutableStateOf(0) }
   val controllerState: ControllerState by derivedStateOf { controllers.get(selectedControllerIndex) }
   fun replaceChangeOptions(lambda:()->DrawOptions) {
     controllers = controllers.toMutableList().also {
@@ -174,8 +177,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       is DrawOptions.Selection -> {
         null
       }
+      is DrawOptions.BezierReference -> {
+        null
+      }
       is DrawOptions.Curve -> {
-        Element.Curve(options.color, points = currentPoints.orEmpty())
+        Element.Curve(options.color, points = currentPoints.orEmpty(), emptyMap())
       }
       is DrawOptions.Rect -> {
         val points = currentPoints
@@ -237,34 +243,113 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   ) {
     (savedElements + listOfNotNull(currentElement)).forEach { e ->
       when (e) {
-        is Element.Curve -> drawCurve(e.color, e.points.pts(mapIdToPoint))
+        is Element.Curve -> {
+          drawCurve(e.color, e.points.pts(mapIdToPoint), e.bezierRef.pt(mapIdToPoint))
+        }
         is Element.Rect -> drawRect(e.color, e.start.pt(mapIdToPoint), e.end.pt(mapIdToPoint))
         is Element.Bitmap -> drawBitmap(e.topLeft.pt(mapIdToPoint), e.byteArray)
       }
     }
   }
 
-  if (controllerState.options is DrawOptions.Selection) {
-    Canvas(
-      modifier.wrapContentSize(Alignment.Center)
-        .fillMaxSize()
-        .pointerInput(Unit) {
-          while (true) {
-            val event = awaitPointerEventScope { awaitPointerEvent() }
-            val point = event.mouseEvent?.point
-            if (event.buttons.isPrimaryPressed && point != null) {
-              val variant = mapIdToPoint.minByOrNull { point.pt distance it.value }
-              if (variant != null) {
-                mapIdToPoint = mapIdToPoint.toMutableMap().apply {
-                  set(variant.key, point.pt)
+  when(controllerState.options) {
+    is DrawOptions.Selection -> {
+      Canvas(
+        modifier.wrapContentSize(Alignment.Center)
+          .fillMaxSize()
+          .pointerInput(Unit) {
+            while (true) {
+              val event = awaitPointerEventScope { awaitPointerEvent() }
+              val point = event.mouseEvent?.point
+              if (event.buttons.isPrimaryPressed && point != null) {
+                val candidate = mapIdToPoint.minByOrNull { point.pt distance it.value }
+                if (candidate != null) {
+                  mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                    set(candidate.key, point.pt)
+                  }
                 }
               }
             }
           }
+      ) {
+        mapIdToPoint.values.forEach {
+          drawCircle(Color.Red, 5f, center = it.offset)
         }
-    ) {
-      mapIdToPoint.values.forEach {
-        drawCircle(Color.Red, 5f, center = it.offset)
+      }
+    }
+    is DrawOptions.BezierReference -> {
+      class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key:Id, val isRefA:Boolean) : Pt
+      val bezierPoints: List<BezierPt> by derivedStateOf {
+        val elements = savedElements
+        val map = mapIdToPoint
+        buildList {
+          elements.filterIsInstance<Element.Curve>().forEach { curve ->
+            val points = curve.points
+            (points.take(1) + points + points.takeLast(1)).windowed(4).forEach { (before, a, b, after) ->
+              val idA = curve.bezierRef[a]?.refA
+              val idB = curve.bezierRef[b]?.refB
+              val result = calcBezier(before.pt(map), a.pt(map), b.pt(map), after.pt(map))
+              val bezierA = idA?.pt(map) ?: result.bezierA
+              val bezierB = idB?.pt(map) ?: result.bezierB
+              add(
+                BezierPt(bezierA.x, bezierA.y, idA, curve, a, true)
+              )
+              add(
+                BezierPt(bezierB.x, bezierB.y, idB, curve, b, false)
+              )
+            }
+          }
+        }
+      }
+      Canvas(
+        modifier.wrapContentSize(Alignment.Center)
+          .fillMaxSize()
+          .pointerInput(Unit) {
+            while (true) {
+              val event = awaitPointerEventScope { awaitPointerEvent() }
+              val point = event.mouseEvent?.point
+              if (event.buttons.isPrimaryPressed && point != null) {
+
+                val candidate = bezierPoints.minByOrNull { bezierPt->
+                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt)
+                }
+                if (candidate != null) {
+                  // create new pt
+                  val id = candidate.id
+                  if (id == null) {
+                    val newId = addPoint(point.pt)
+                    savedElements = savedElements.toMutableList().apply {
+                      val index = indexOf(candidate.curve)
+                      if(index >= 0) {
+                        set(
+                          index,
+                          candidate.curve.copy(
+                            bezierRef = candidate.curve.bezierRef.toMutableMap().apply {
+                              val previous = (get(candidate.key) ?: BezierRefEdit(null, null))
+                              if(candidate.isRefA) {
+                                set(candidate.key, previous.copy(refA = newId))
+                              } else {
+                                set(candidate.key, previous.copy(refB = newId))
+                              }
+                            }
+                          )
+                        )
+                      }
+                    }
+                  } else {
+                    mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                      set(id, point.pt)
+                    }
+                  }
+
+                }
+              }
+            }
+          }
+      ) {
+        bezierPoints.forEach {
+          drawCircle(Color.Red, 5f, center = it.offset)
+        }
       }
     }
   }
@@ -279,6 +364,15 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>):Map<Pt,BezierRef> {
+  val result = mutableMapOf<Pt, BezierRef>()
+  entries.forEach {
+    result.put(it.key.pt(mapIdToPoint), it.value.pt(mapIdToPoint))
+  }
+  return result
 }
 
 val Point.pt get() = Pt(x.toFloat(), y.toFloat())
@@ -300,3 +394,4 @@ fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
 
 inline fun Id.pt(map:Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map:Map<Id, Pt>): List<Pt> = map { it.pt(map) }
+inline fun BezierRefEdit.pt(map:Map<Id, Pt>):BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))

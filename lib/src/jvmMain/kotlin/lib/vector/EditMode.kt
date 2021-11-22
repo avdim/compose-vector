@@ -26,6 +26,8 @@ import lib.vector.utils.toByteArray
 import java.awt.Point
 import java.awt.image.BufferedImage
 
+const val CURVE_PRECISION = 25f
+
 sealed class DrawOptions {
   class Selection:DrawOptions()
   class BezierReference : DrawOptions()
@@ -181,7 +183,29 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         null
       }
       is DrawOptions.Curve -> {
-        Element.Curve(options.color, points = currentPoints.orEmpty(), emptyMap())
+
+        val points: List<Id> = currentPoints.orEmpty()
+        val fullLength = points.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
+        val threshold = fullLength / CURVE_PRECISION
+
+        class PointWithNeighbours(var prev: Int, val current: Int, var next: Int) {
+          val currentPoint = points[current].pt(mapIdToPoint)
+          val prevDistance get() = points[prev].pt(mapIdToPoint) distance currentPoint
+          val nextDistance get() = points[next].pt(mapIdToPoint) distance currentPoint
+          val sumDistance get() = prevDistance + nextDistance
+        }
+        val temp = points.indices.windowed(3).map { (prev, current, next) ->
+          PointWithNeighbours(prev, current, next)
+        }.toMutableList()
+        fun getTempByIndex(index: Int) = temp.firstOrNull { it.current == index }
+        temp.sortBy { it.sumDistance }
+        while (temp.isNotEmpty() && temp.first().sumDistance < threshold) {
+          val removed = temp.removeFirst()
+          getTempByIndex(removed.prev)?.next = removed.next
+          getTempByIndex(removed.next)?.prev = removed.prev
+          temp.sortBy { it.sumDistance }
+        }
+        Element.Curve(options.color, points = points.takeOrSmaller(1) + points.filterIndexed{i,_ -> temp.any{it.current == i}} + points.takeLastOrSmaller(1), emptyMap())
       }
       is DrawOptions.Rect -> {
         val points = currentPoints
@@ -236,6 +260,24 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           if (currentPoints != null && event.keyboardModifiers.isShiftPressed.not()) {
             pointerEnd(point?.pt)
             currentPoints = null
+            //todo пробежаться, удалить неиспользуемые точки
+            val usedIds = mutableSetOf<Id>()
+            savedElements.forEach { e->
+              when(e) {
+                is Element.Curve -> {
+                  usedIds.addAll(e.points)
+                  usedIds.addAll(e.bezierRef.values.flatMap { listOfNotNull(it.refA, it.refB) })
+                }
+                is Element.Rect -> {
+                  usedIds.add(e.start)
+                  usedIds.add(e.end)
+                }
+                is Element.Bitmap -> {
+                  usedIds.add(e.topLeft)
+                }
+              }
+            }
+            mapIdToPoint = mapIdToPoint.filterKeys { usedIds.contains(it) }
           }
         }
       }
@@ -395,3 +437,5 @@ fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
 inline fun Id.pt(map:Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map:Map<Id, Pt>): List<Pt> = map { it.pt(map) }
 inline fun BezierRefEdit.pt(map:Map<Id, Pt>):BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))
+fun <T> List<T>.takeOrSmaller(n: Int) = take(minOf(n, size))
+fun <T> List<T>.takeLastOrSmaller(n: Int) = takeLast(minOf(n, size))

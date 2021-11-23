@@ -10,11 +10,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
+
+const val DEFAULT_BEZIER_SCALE = 0.5f
+const val FILL_PATH = true
 
 private val Pt.size: Size get() = Size(x.absoluteValue.toFloat(), y.absoluteValue.toFloat())
 val Pt.offset: Offset get() = Offset(x.toFloat(), y.toFloat())
@@ -48,8 +52,8 @@ fun DisplayMode(modifier:Modifier, lambda: GeneratedScope.() -> Unit) {
 //                lineTo(to.x, to.y)
               }
             },
-            Color(color),
-            style = Stroke(width = 2f)
+            color = Color(color),
+            style = if (FILL_PATH) Fill else Stroke(width = 2f)
           )
         }
       }
@@ -83,7 +87,6 @@ fun calcBezier(before: Pt, from: Pt, to: Pt, after: Pt): BezierResult {
 
 class InTriangleResult(val outC: Pt, val inC: Pt)
 
-const val BEZIER_SCALE = 0.5f
 fun calcBezierInTriangle(a:Pt, b:Pt, c:Pt):InTriangleResult {
   val ab = a.distance(b).toFloat()
   val bc = b.distance(c).toFloat()
@@ -91,7 +94,7 @@ fun calcBezierInTriangle(a:Pt, b:Pt, c:Pt):InTriangleResult {
   val scaleC = bc / (ab + bc + 0.001f)
   val direction = (c - a)
   return InTriangleResult(
-    outC = b + direction * scaleA * BEZIER_SCALE,
-    inC = b - direction * scaleC * BEZIER_SCALE,
+    outC = b + direction * scaleA * DEFAULT_BEZIER_SCALE,
+    inC = b - direction * scaleC * DEFAULT_BEZIER_SCALE,
   )
 }

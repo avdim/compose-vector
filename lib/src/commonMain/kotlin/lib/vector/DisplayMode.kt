@@ -18,7 +18,7 @@ import lib.vector.utils.toImageBitmap
 import kotlin.math.absoluteValue
 
 const val DEFAULT_BEZIER_SCALE = 0.5f
-const val FILL_PATH = true
+const val FILL_PATH = false
 
 @Composable
 fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {

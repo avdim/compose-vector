@@ -260,7 +260,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           if (currentPoints != null && event.keyboardModifiers.isShiftPressed.not()) {
             pointerEnd(point?.pt)
             currentPoints = null
-            //todo пробежаться, удалить неиспользуемые точки
+
+            //Iterate and remove unused points
             val usedIds = mutableSetOf<Id>()
             savedElements.forEach { e->
               when(e) {
@@ -327,17 +328,17 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         buildList {
           elements.filterIsInstance<Element.Curve>().forEach { curve ->
             val points = curve.points
-            (points.take(1) + points + points.takeLast(1)).windowed(4).forEach { (before, a, b, after) ->
-              val idA = curve.bezierRef[a]?.refA
-              val idB = curve.bezierRef[b]?.refB
-              val result = calcBezier(before.pt(map), a.pt(map), b.pt(map), after.pt(map))
+            points.toLineSegments().forEach { s->
+              val idA = curve.bezierRef[s.start]?.refA
+              val idB = curve.bezierRef[s.end]?.refB
+              val result = calcDefaultBezierReferences(s.before.pt(map), s.start.pt(map), s.end.pt(map), s.after.pt(map))
               val bezierA = idA?.pt(map) ?: result.refFrom
               val bezierB = idB?.pt(map) ?: result.refTo
               add(
-                BezierPt(bezierA.x, bezierA.y, idA, curve, a, true)
+                BezierPt(bezierA.x, bezierA.y, idA, curve, s.start, true)
               )
               add(
-                BezierPt(bezierB.x, bezierB.y, idB, curve, b, false)
+                BezierPt(bezierB.x, bezierB.y, idB, curve, s.end, false)
               )
             }
           }
@@ -437,5 +438,3 @@ fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
 inline fun Id.pt(map:Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map:Map<Id, Pt>): List<Pt> = map { it.pt(map) }
 inline fun BezierRefEdit.pt(map:Map<Id, Pt>):BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))
-fun <T> List<T>.takeOrSmaller(n: Int) = take(minOf(n, size))
-fun <T> List<T>.takeLastOrSmaller(n: Int) = takeLast(minOf(n, size))

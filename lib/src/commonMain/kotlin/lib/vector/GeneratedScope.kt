@@ -5,7 +5,7 @@ import kotlin.reflect.KProperty
 
 interface GeneratedScope {
   fun mkPt(x: Float, y: Float): MakePt
-  fun drawCurve(color:ULong, points: List<Pt>, bezieRef:Map<Pt, BezierRef> = emptyMap())
+  fun drawCurve(color:ULong, points: List<Pt>, bezierRef:Map<Pt, BezierRef> = emptyMap())
   fun drawRect(color:ULong, start: Pt, end: Pt)
   fun drawBitmap(pt: Pt, byteArray: ByteArray)
 

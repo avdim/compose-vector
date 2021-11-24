@@ -22,6 +22,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
+import lib.vector.intercept.interceptLinear
 import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
 import java.awt.Point
@@ -277,7 +278,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               when (e) {
                 is Element.Curve -> {
                   usedIds.addAll(e.points)
-                  usedIds.addAll(e.bezierRef.values.flatMap { listOfNotNull(it.refA, it.refB) })
+                  usedIds.addAll(e.bezierRef.values.flatMap { listOfNotNull(it.startRef, it.endRef) })
                 }
                 is Element.Rect -> {
                   usedIds.add(e.start)
@@ -309,51 +310,20 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     modifier.wrapContentSize(Alignment.Center)
       .fillMaxSize()
   ) {
-    val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { it.points.toLineSegments() }
+    val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve->
+      curve.points.toLineSegments().map {
+        it.map { it.pt(mapIdToPoint) }.bezierSegment(
+          startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
+          endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
+        )
+      }
+    }
+
     for (i in 0 until allSegments.size) {
       for (j in i + 1 until allSegments.size) {
-        val a = allSegments[i]
-        val b = allSegments[j]
-
-        val a1 = a.start.pt(mapIdToPoint)
-        val a2 = a.end.pt(mapIdToPoint)
-
-        val b1 = b.start.pt(mapIdToPoint)
-        val b2 = b.end.pt(mapIdToPoint)
-
-        fun intercept(x1:Float, y1:Float, x2:Float, y2:Float, x3:Float, y3:Float, x4:Float, y4:Float):Pt? {
-          //https://habr.com/ru/post/523440/
-          val n: Float;
-          if (y2 - y1 != 0f) {  // a(y)
-            val q = (x2 - x1) / (y1 - y2);
-            val sn = (x3 - x4) + (y3 - y4) * q;
-            if (sn == 0f) {
-              return null; // c(x) + c(y)*q
-            }
-            val fn = (x3 - x1) + (y3 - y1) * q;   // b(x) + b(y)*q
-            n = fn / sn;
-          } else {
-            if (y3 - y4 == 0f) {
-              return null;   // b(y)
-            }
-            n = (y3 - y1) / (y3 - y4);   // c(y)/b(y)
-          }
-          val x = x3 + (x4 - x3) * n;  // x3 + (-b(x))*n
-          val y = y3 + (y4 - y3) * n;  // y3 +(-b(y))*n
-          val r = Pt(x, y)
-          if (true
-            && r.x > minOf(x1, x2) && r.x > minOf(x3, x4)
-            && r.x < maxOf(x1, x2) && r.x < maxOf(x3, x4)
-            && r.y > minOf(y1, y2) && r.y > minOf(y3, y4)
-            && r.y < maxOf(y1, y2) && r.y < maxOf(y3, y4)
-          ) {
-            return r
-          } else {
-            return null
-          }
-        }
-
-        val interceptedPoint = intercept(a1.x, a1.y, a2.x, a2.y, b1.x, b1.y, b2.x, b2.y)
+        val a: BezierSegment = allSegments[i]
+        val b: BezierSegment = allSegments[j]
+        val interceptedPoint = interceptLinear(a, b)
         if (interceptedPoint != null) {
           drawCircle(Color.Black, 5f, center = interceptedPoint.offset)
         }
@@ -396,16 +366,14 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           elements.filterIsInstance<Element.Curve>().forEach { curve ->
             val points = curve.points
             points.toLineSegments().forEach { s ->
-              val idA = curve.bezierRef[s.start]?.refA
-              val idB = curve.bezierRef[s.end]?.refB
-              val result = calcDefaultBezierReferences(s.before.pt(map), s.start.pt(map), s.end.pt(map), s.after.pt(map))
-              val bezierA = idA?.pt(map) ?: result.refFrom
-              val bezierB = idB?.pt(map) ?: result.refTo
+              val idStart = curve.bezierRef[s.start]?.startRef
+              val idEnd = curve.bezierRef[s.end]?.endRef
+              val result = s.map { it.pt(map) }.bezierSegment(startRef = idStart?.pt(map), idEnd?.pt(map))
               add(
-                BezierPt(bezierA.x, bezierA.y, idA, curve, s.start, true)
+                BezierPt(result.refStart.x, result.refStart.y, idStart, curve, s.start, true)
               )
               add(
-                BezierPt(bezierB.x, bezierB.y, idB, curve, s.end, false)
+                BezierPt(result.refEnd.x, result.refEnd.y, idEnd, curve, s.end, false)
               )
             }
           }
@@ -437,9 +405,9 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                             bezierRef = candidate.curve.bezierRef.toMutableMap().apply {
                               val previous = (get(candidate.key) ?: BezierRefEdit(null, null))
                               if (candidate.isRefA) {
-                                set(candidate.key, previous.copy(refA = newId))
+                                set(candidate.key, previous.copy(startRef = newId))
                               } else {
-                                set(candidate.key, previous.copy(refB = newId))
+                                set(candidate.key, previous.copy(endRef = newId))
                               }
                             }
                           )
@@ -504,4 +472,4 @@ fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
 
 inline fun Id.pt(map: Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map: Map<Id, Pt>): List<Pt> = map { it.pt(map) }
-inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))
+inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BezierRef(startRef = startRef?.pt(map), endRef = endRef?.pt(map))

@@ -23,13 +23,13 @@ infix fun Pt.distance(other: Pt): Double {
 }
 
 data class BezierRef(
-  val refA: Pt?,
-  val refB: Pt?
+  val startRef: Pt?,
+  val endRef: Pt?
 )
 
 data class BezierRefEdit(
-  val refA: Id?,
-  val refB: Id?
+  val startRef: Id?,
+  val endRef: Id?
 )
 
 sealed class Element {

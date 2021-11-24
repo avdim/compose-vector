@@ -1,17 +1,22 @@
 package lib.vector
 
-class BezierReference(val refFrom: Pt, val refTo: Pt)
+class BezierSegment(val start: Pt, val end: Pt, val refStart: Pt, val refEnd: Pt)
 
-fun calcDefaultBezierReferences(before: Pt, from: Pt, to: Pt, after: Pt): BezierReference {
-  return BezierReference(
-    refFrom = calcDefaultBezierInTriangle(before, from, to).refFrom,
-    refTo = calcDefaultBezierInTriangle(from, to, after).refTo
+fun LineSegment<Pt>.bezierSegment(startRef: Pt?, endRef: Pt?): BezierSegment {
+  val defaultBezierReferences by lazy(mode = LazyThreadSafetyMode.NONE) {
+    calcDefaultBezierReferences(before = before, start = start, end = end, after = after)
+  }
+  return BezierSegment(
+    start = start,
+    end = end,
+    refStart = startRef ?: defaultBezierReferences.refStart,
+    refEnd = endRef ?: defaultBezierReferences.refEnd
   )
 }
 
-class InTriangleResult(val refFrom: Pt, val refTo: Pt)
+private class InTriangleResult(val refFrom: Pt, val refTo: Pt)
 
-fun calcDefaultBezierInTriangle(a: Pt, b: Pt, c: Pt): InTriangleResult {
+private fun calcDefaultBezierInTriangle(a: Pt, b: Pt, c: Pt): InTriangleResult {
   val ab = a.distance(b).toFloat()
   val bc = b.distance(c).toFloat()
   val scaleA = ab / (ab + bc + 0.001f)
@@ -23,3 +28,11 @@ fun calcDefaultBezierInTriangle(a: Pt, b: Pt, c: Pt): InTriangleResult {
   )
 }
 
+private class BezierReferences(val refStart: Pt, val refEnd: Pt)
+
+private fun calcDefaultBezierReferences(before: Pt, start: Pt, end: Pt, after: Pt): BezierReferences {
+  return BezierReferences(
+    refStart = calcDefaultBezierInTriangle(before, start, end).refFrom,
+    refEnd = calcDefaultBezierInTriangle(start, end, after).refTo
+  )
+}

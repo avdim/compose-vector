@@ -50,6 +50,7 @@ public final class SystemInfo {
 
   public static final boolean isXWindow = SystemInfoRt.isXWindow;
   public static final boolean isWayland, isGNOME, isKDE, isXfce, isI3;
+
   static {
     // http://askubuntu.com/questions/72549/how-to-determine-which-window-manager-is-running/227669#227669
     // https://userbase.kde.org/KDE_System_Administration/Environment_Variables#KDE_FULL_SESSION
@@ -60,8 +61,7 @@ public final class SystemInfo {
       isKDE = !isGNOME && (desktop != null && desktop.contains("KDE") || System.getenv("KDE_FULL_SESSION") != null);
       isXfce = !isGNOME && !isKDE && (desktop != null && desktop.contains("XFCE"));
       isI3 = !isGNOME && !isKDE && !isXfce && (desktop != null && desktop.contains("i3"));
-    }
-    else {
+    } else {
       isWayland = isGNOME = isKDE = isXfce = isI3 = false;
     }
   }
@@ -79,7 +79,8 @@ public final class SystemInfo {
   public static final boolean isMacOSBigSur = isMac && isOsVersionAtLeast("10.16");
   public static final boolean isMacOSMonterey = isMac && isOsVersionAtLeast("12.0");
 
-  public static @NotNull String getMacOSMajorVersion() {
+  public static @NotNull
+  String getMacOSMajorVersion() {
     return getMacOSMajorVersion(OS_VERSION);
   }
 
@@ -88,29 +89,35 @@ public final class SystemInfo {
     return String.format("%d.%d", parts[0], parts[1]);
   }
 
-  public static @NotNull String getMacOSVersionCode() {
+  public static @NotNull
+  String getMacOSVersionCode() {
     return getMacOSVersionCode(OS_VERSION);
   }
 
-  public static @NotNull String getMacOSMajorVersionCode() {
+  public static @NotNull
+  String getMacOSMajorVersionCode() {
     return getMacOSMajorVersionCode(OS_VERSION);
   }
 
-  public static @NotNull String getMacOSMinorVersionCode() {
+  public static @NotNull
+  String getMacOSMinorVersionCode() {
     return getMacOSMinorVersionCode(OS_VERSION);
   }
 
-  public static @NotNull String getMacOSVersionCode(@NotNull String version) {
+  public static @NotNull
+  String getMacOSVersionCode(@NotNull String version) {
     int[] parts = getMacOSVersionParts(version);
     return String.format("%02d%d%d", parts[0], normalize(parts[1]), normalize(parts[2]));
   }
 
-  public static @NotNull String getMacOSMajorVersionCode(@NotNull String version) {
+  public static @NotNull
+  String getMacOSMajorVersionCode(@NotNull String version) {
     int[] parts = getMacOSVersionParts(version);
     return String.format("%02d%d%d", parts[0], normalize(parts[1]), 0);
   }
 
-  public static @NotNull String getMacOSMinorVersionCode(@NotNull String version) {
+  public static @NotNull
+  String getMacOSMinorVersionCode(@NotNull String version) {
     int[] parts = getMacOSVersionParts(version);
     return String.format("%02d%02d", parts[1], parts[2]);
   }
@@ -134,8 +141,7 @@ public final class SystemInfo {
   private static int toInt(String string) {
     try {
       return Integer.parseInt(string);
-    }
-    catch (NumberFormatException e) {
+    } catch (NumberFormatException e) {
       return 0;
     }
   }
@@ -143,47 +149,69 @@ public final class SystemInfo {
   public static final boolean isIntel64 = CpuArch.isIntel64();
   public static final boolean isMacIntel64 = isMac && isIntel64;
 
-  /** @deprecated always false */
+  /**
+   * @deprecated always false
+   */
   @Deprecated
   public static final boolean isAppleJvm = false;
 
-  /** @deprecated always false */
+  /**
+   * @deprecated always false
+   */
   @Deprecated
   public static final boolean isSunJvm = false;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSTiger = isMac;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSLeopard = isMac;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSSnowLeopard = isMac;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSLion = isMac;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSMountainLion = isMac;
 
-  /** @deprecated always true (Java 8 requires macOS 10.9+) */
+  /**
+   * @deprecated always true (Java 8 requires macOS 10.9+)
+   */
   @Deprecated
   public static final boolean isMacOSMavericks = isMac;
 
-  /** @deprecated always true (Java 8 requires Windows Vista / Server 2008) */
+  /**
+   * @deprecated always true (Java 8 requires Windows Vista / Server 2008)
+   */
   @Deprecated
   public static final boolean isWin2kOrNewer = isWindows;
 
-  /** @deprecated always true (Java 8 requires Windows Vista / Server 2008) */
+  /**
+   * @deprecated always true (Java 8 requires Windows Vista / Server 2008)
+   */
   @Deprecated
   public static final boolean isWinVistaOrNewer = isWindows;
 
-  /** @deprecated always true */
+  /**
+   * @deprecated always true
+   */
   @Deprecated
   public static final boolean areSymLinksSupported = isUnix || isWindows;
   //</editor-fold>

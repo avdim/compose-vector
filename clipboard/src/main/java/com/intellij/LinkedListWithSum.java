@@ -19,7 +19,9 @@ public class LinkedListWithSum<E> extends AbstractSequentialList<E> implements L
   private final ToIntFunction<? super E> myEvaluator;
   private long mySum;
 
-  public LinkedListWithSum(@NotNull ToIntFunction<? super E> evaluator) {myEvaluator = evaluator;}
+  public LinkedListWithSum(@NotNull ToIntFunction<? super E> evaluator) {
+    myEvaluator = evaluator;
+  }
 
   private ItemWithValue<E> createItem(E e) {
     return new ItemWithValue<>(e, myEvaluator.applyAsInt(e));

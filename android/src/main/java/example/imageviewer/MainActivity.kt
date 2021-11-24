@@ -6,11 +6,11 @@ import androidx.activity.compose.setContent
 import com.usage.*
 
 class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
 
-        setContent {
-            UsageInCommon()
-        }
+    setContent {
+      UsageInCommon()
     }
+  }
 }

@@ -29,14 +29,14 @@ import java.awt.image.BufferedImage
 const val CURVE_PRECISION = 25f
 
 sealed class DrawOptions {
-  class Selection:DrawOptions()
+  class Selection : DrawOptions()
   class BezierReference : DrawOptions()
-  data class Curve(val color:ULong = Color.Blue.value):DrawOptions()
-  data class Rect(val color:ULong = Color.Yellow.value):DrawOptions()
-  data class Img(val image: ImageBitmap? = null):DrawOptions()
+  data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
+  data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
+  data class Img(val image: ImageBitmap? = null) : DrawOptions()
 }
 
-data class ControllerState(val name:String, val options:DrawOptions)
+data class ControllerState(val name: String, val options: DrawOptions)
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
@@ -52,6 +52,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       generatedMapIdToPoint[id] = pt
       id
     }
+
   val generatedScope = object : GeneratedScope {
     override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, property ->
       val id = getNextPointId(property.name)
@@ -60,12 +61,14 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       pt
     }
 
-    override fun drawCurve(color: ULong, points: List<Pt>, bezieRef:Map<Pt, BezierRef>) {
-      generatedElements.add(Element.Curve(
-        color = color,
-        points = points.map(::mapPtToId),
-        emptyMap()//todo
-      ))
+    override fun drawCurve(color: ULong, points: List<Pt>, bezieRef: Map<Pt, BezierRef>) {
+      generatedElements.add(
+        Element.Curve(
+          color = color,
+          points = points.map(::mapPtToId),
+          emptyMap()//todo
+        )
+      )
     }
 
     override fun drawRect(color: ULong, start: Pt, end: Pt) {
@@ -94,13 +97,14 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
   var selectedControllerIndex by remember { mutableStateOf(0) }
   val controllerState: ControllerState by derivedStateOf { controllers.get(selectedControllerIndex) }
-  fun replaceChangeOptions(lambda:()->DrawOptions) {
+  fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
       it[selectedControllerIndex] = it[selectedControllerIndex].copy(
         options = lambda()
       )
     }
   }
+
   fun addPoint(pt: Pt): Id {
     val id = getNextPointId()
     mapIdToPoint = mapIdToPoint + Pair(id, pt)
@@ -194,9 +198,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           val nextDistance get() = points[next].pt(mapIdToPoint) distance currentPoint
           val sumDistance get() = prevDistance + nextDistance
         }
+
         val temp = points.indices.windowed(3).map { (prev, current, next) ->
           PointWithNeighbours(prev, current, next)
         }.toMutableList()
+
         fun getTempByIndex(index: Int) = temp.firstOrNull { it.current == index }
         temp.sortBy { it.sumDistance }
         while (temp.isNotEmpty() && temp.first().sumDistance < threshold) {
@@ -205,7 +211,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           getTempByIndex(removed.next)?.prev = removed.prev
           temp.sortBy { it.sumDistance }
         }
-        Element.Curve(options.color, points = points.takeOrSmaller(1) + points.filterIndexed{i,_ -> temp.any{it.current == i}} + points.takeLastOrSmaller(1), emptyMap())
+        Element.Curve(
+          options.color,
+          points = points.takeOrSmaller(1) + points.filterIndexed { i, _ -> temp.any { it.current == i } } + points.takeLastOrSmaller(1),
+          emptyMap())
       }
       is DrawOptions.Rect -> {
         val points = currentPoints
@@ -219,7 +228,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         val img = options.image
         val points = currentPoints
 
-        if(img != null && points != null && points.isNotEmpty()) {
+        if (img != null && points != null && points.isNotEmpty()) {
           Element.Bitmap(
             points.last(),
             byteArray = img.toByteArray()
@@ -263,8 +272,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
             //Iterate and remove unused points
             val usedIds = mutableSetOf<Id>()
-            savedElements.forEach { e->
-              when(e) {
+            savedElements.forEach { e ->
+              when (e) {
                 is Element.Curve -> {
                   usedIds.addAll(e.points)
                   usedIds.addAll(e.bezierRef.values.flatMap { listOfNotNull(it.refA, it.refB) })
@@ -295,7 +304,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  when(controllerState.options) {
+  when (controllerState.options) {
     is DrawOptions.Selection -> {
       Canvas(
         modifier.wrapContentSize(Alignment.Center)
@@ -321,14 +330,15 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
     }
     is DrawOptions.BezierReference -> {
-      class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key:Id, val isRefA:Boolean) : Pt
+      class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean) : Pt
+
       val bezierPoints: List<BezierPt> by derivedStateOf {
         val elements = savedElements
         val map = mapIdToPoint
         buildList {
           elements.filterIsInstance<Element.Curve>().forEach { curve ->
             val points = curve.points
-            points.toLineSegments().forEach { s->
+            points.toLineSegments().forEach { s ->
               val idA = curve.bezierRef[s.start]?.refA
               val idB = curve.bezierRef[s.end]?.refB
               val result = calcDefaultBezierReferences(s.before.pt(map), s.start.pt(map), s.end.pt(map), s.after.pt(map))
@@ -353,7 +363,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               val point = event.mouseEvent?.point
               if (event.buttons.isPrimaryPressed && point != null) {
 
-                val candidate = bezierPoints.minByOrNull { bezierPt->
+                val candidate = bezierPoints.minByOrNull { bezierPt ->
                   point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt)
                 }
                 if (candidate != null) {
@@ -363,13 +373,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                     val newId = addPoint(point.pt)
                     savedElements = savedElements.toMutableList().apply {
                       val index = indexOf(candidate.curve)
-                      if(index >= 0) {
+                      if (index >= 0) {
                         set(
                           index,
                           candidate.curve.copy(
                             bezierRef = candidate.curve.bezierRef.toMutableMap().apply {
                               val previous = (get(candidate.key) ?: BezierRefEdit(null, null))
-                              if(candidate.isRefA) {
+                              if (candidate.isRefA) {
                                 set(candidate.key, previous.copy(refA = newId))
                               } else {
                                 set(candidate.key, previous.copy(refB = newId))
@@ -410,7 +420,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 }
 
 @OptIn(ExperimentalStdlibApi::class)
-fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>):Map<Pt,BezierRef> {
+fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>): Map<Pt, BezierRef> {
   val result = mutableMapOf<Pt, BezierRef>()
   entries.forEach {
     result.put(it.key.pt(mapIdToPoint), it.value.pt(mapIdToPoint))
@@ -421,7 +431,7 @@ fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>):Map<Pt,BezierRef> {
 val Point.pt get() = Pt(x.toFloat(), y.toFloat())
 
 @Composable
-fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
+fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
   Column {
     TextButton("Blue") {
       onChageColor(Color.Blue.value)
@@ -435,6 +445,6 @@ fun ColorPicker(currentColor:ULong, onChageColor:(ULong)->Unit) {
   }
 }
 
-inline fun Id.pt(map:Map<Id, Pt>): Pt = map[this]!!
-inline fun Collection<Id>.pts(map:Map<Id, Pt>): List<Pt> = map { it.pt(map) }
-inline fun BezierRefEdit.pt(map:Map<Id, Pt>):BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))
+inline fun Id.pt(map: Map<Id, Pt>): Pt = map[this]!!
+inline fun Collection<Id>.pts(map: Map<Id, Pt>): List<Pt> = map { it.pt(map) }
+inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BezierRef(refA = refA?.pt(map), refB = refB?.pt(map))

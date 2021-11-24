@@ -13,8 +13,10 @@ public enum CpuArch {
 
   CpuArch(int width) {
     if (width == 0) {
-      try { width = Integer.parseInt(System.getProperty("sun.arch.data.model", "32")); }
-      catch (NumberFormatException ignored) { }
+      try {
+        width = Integer.parseInt(System.getProperty("sun.arch.data.model", "32"));
+      } catch (NumberFormatException ignored) {
+      }
     }
     this.width = width;
   }
@@ -27,30 +29,37 @@ public enum CpuArch {
    * <p><b>Note</b>: may not correspond to the actual hardware if a JVM is "virtualized" (e.g. WoW64 or Rosetta 2).</p>
    */
   public static final CpuArch CURRENT;
+
   static {
     String arch = System.getProperty("os.arch");
     if ("x86_64".equals(arch) || "amd64".equals(arch)) {
       CURRENT = X86_64;
-    }
-    else if ("i386".equals(arch) || "x86".equals(arch)) {
+    } else if ("i386".equals(arch) || "x86".equals(arch)) {
       CURRENT = X86;
-    }
-    else if ("aarch64".equals(arch) || "arm64".equals(arch)) {
+    } else if ("aarch64".equals(arch) || "arm64".equals(arch)) {
       CURRENT = ARM64;
-    }
-    else if (arch == null || arch.trim().isEmpty()) {
+    } else if (arch == null || arch.trim().isEmpty()) {
       CURRENT = UNKNOWN;
-    }
-    else {
+    } else {
       CURRENT = OTHER;
     }
   }
 
-  public static boolean isIntel32() { return CURRENT == X86; }
-  public static boolean isIntel64() { return CURRENT == X86_64; }
-  public static boolean isArm64() { return CURRENT == ARM64; }
+  public static boolean isIntel32() {
+    return CURRENT == X86;
+  }
 
-  public static boolean is32Bit() { return CURRENT.width == 32; }
+  public static boolean isIntel64() {
+    return CURRENT == X86_64;
+  }
+
+  public static boolean isArm64() {
+    return CURRENT == ARM64;
+  }
+
+  public static boolean is32Bit() {
+    return CURRENT.width == 32;
+  }
 
   /**
    * The method tries to detect whether this JVM is executed in a known emulated environment - Rosetta 2, WoW64, etc.
@@ -59,11 +68,9 @@ public enum CpuArch {
     if (ourEmulated == null) {
       if (CURRENT == X86_64) {
         ourEmulated = SystemInfoRt.isMac && isUnderRosetta() || SystemInfoRt.isWindows && !matchesWindowsNativeArch();
-      }
-      else if (CURRENT == X86) {
+      } else if (CURRENT == X86) {
         ourEmulated = SystemInfoRt.isWindows && !matchesWindowsNativeArch();
-      }
-      else {
+      } else {
         ourEmulated = Boolean.FALSE;
       }
     }
@@ -71,7 +78,8 @@ public enum CpuArch {
     return ourEmulated == Boolean.TRUE;
   }
 
-  private static @Nullable Boolean ourEmulated;
+  private static @Nullable
+  Boolean ourEmulated;
 
   //<editor-fold desc="Emulated environment detection">
   // https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment

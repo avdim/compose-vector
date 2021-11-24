@@ -32,7 +32,7 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             path = Path().apply {
               val start = points[0]
               moveTo(start.x, start.y)
-              points.toLineSegments().forEach { s->
+              points.toLineSegments().forEach { s ->
                 val savedBezierA = bezierRef[s.start]?.refA
                 val savedBezierB = bezierRef[s.end]?.refB
                 val result = calcDefaultBezierReferences(s.before, s.start, s.end, s.after)

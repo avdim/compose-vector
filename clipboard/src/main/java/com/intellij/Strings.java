@@ -95,8 +95,8 @@ public final class Strings {
   @Contract(pure = true)
   public static boolean containsAnyChar(final @NotNull String value, final @NotNull String chars) {
     return chars.length() > value.length()
-           ? containsAnyChar(value, chars, 0, value.length())
-           : containsAnyChar(chars, value, 0, chars.length());
+      ? containsAnyChar(value, chars, 0, value.length())
+      : containsAnyChar(chars, value, 0, chars.length());
   }
 
   @Contract(pure = true)
@@ -161,7 +161,7 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static int indexOf(char [] s, char c, int start, int end, boolean caseSensitive) {
+  public static int indexOf(char[] s, char c, int start, int end, boolean caseSensitive) {
     end = Math.min(end, s.length);
     for (int i = Math.max(start, 0); i < end; i++) {
       boolean ignoreCase = !caseSensitive;
@@ -182,7 +182,7 @@ public final class Strings {
 
   @Contract(pure = true)
   public static int indexOfAny(final @NotNull String s, final @NotNull String chars, final int start, final int end) {
-    return indexOfAny((CharSequence)s, chars, start, end);
+    return indexOfAny((CharSequence) s, chars, start, end);
   }
 
   @Contract(pure = true)
@@ -198,7 +198,7 @@ public final class Strings {
 
   @Contract(pure = true)
   public static int indexOfIgnoreCase(@NotNull String where, @NotNull String what, int fromIndex) {
-    return indexOfIgnoreCase((CharSequence)where, what, fromIndex);
+    return indexOfIgnoreCase((CharSequence) where, what, fromIndex);
   }
 
   /**
@@ -269,7 +269,8 @@ public final class Strings {
    * Capitalize the first letter of the sentence.
    */
   @Contract(pure = true)
-  public static @NotNull String capitalize(@NotNull String s) {
+  public static @NotNull
+  String capitalize(@NotNull String s) {
     if (s.isEmpty()) return s;
     if (s.length() == 1) return toUpperCase(s);
     if (Character.isUpperCase(s.charAt(0))) return s;
@@ -337,28 +338,33 @@ public final class Strings {
    */
 
   @Contract(pure = true)
-  public static @NotNull String notNullize(@Nullable String s) {
+  public static @NotNull
+  String notNullize(@Nullable String s) {
     return StringUtilRt.notNullize(s);
   }
 
   @Contract(pure = true)
-  public static @NotNull String notNullize(@Nullable String s, @NotNull String defaultValue) {
+  public static @NotNull
+  String notNullize(@Nullable String s, @NotNull String defaultValue) {
     return StringUtilRt.notNullize(s, defaultValue);
   }
 
   @Contract(pure = true)
-  public static @Nullable String nullize(@Nullable String s) {
+  public static @Nullable
+  String nullize(@Nullable String s) {
     return nullize(s, false);
   }
 
   @Contract(pure = true)
-  public static @Nullable String nullize(@Nullable String s, @Nullable String defaultValue) {
+  public static @Nullable
+  String nullize(@Nullable String s, @Nullable String defaultValue) {
     boolean empty = isEmpty(s) || Objects.equals(s, defaultValue);
     return empty ? null : s;
   }
 
   @Contract(pure = true)
-  public static @Nullable String nullize(@Nullable String s, boolean nullizeSpaces) {
+  public static @Nullable
+  String nullize(@Nullable String s, boolean nullizeSpaces) {
     boolean empty = nullizeSpaces ? isEmptyOrSpaces(s) : isEmpty(s);
     return empty ? null : s;
   }
@@ -374,12 +380,14 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String trimEnd(@NotNull String s, @NotNull String suffix) {
+  public static @NotNull
+  String trimEnd(@NotNull String s, @NotNull String suffix) {
     return trimEnd(s, suffix, false);
   }
 
   @Contract(pure = true)
-  public static @NotNull String trimEnd(@NotNull String s, @NotNull String suffix, boolean ignoreCase) {
+  public static @NotNull
+  String trimEnd(@NotNull String s, @NotNull String suffix, boolean ignoreCase) {
     boolean endsWith = ignoreCase ? endsWithIgnoreCase(s, suffix) : s.endsWith(suffix);
     if (endsWith) {
       return s.substring(0, s.length() - suffix.length());
@@ -388,7 +396,8 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String trimEnd(@NotNull String s, char suffix) {
+  public static @NotNull
+  String trimEnd(@NotNull String s, char suffix) {
     if (endsWithChar(s, suffix)) {
       return s.substring(0, s.length() - 1);
     }
@@ -396,7 +405,8 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String trimStart(@NotNull String s, @NotNull String prefix) {
+  public static @NotNull
+  String trimStart(@NotNull String s, @NotNull String prefix) {
     if (s.startsWith(prefix)) {
       return s.substring(prefix.length());
     }
@@ -428,7 +438,7 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static int stringHashCode(char  [] chars, int from, int to) {
+  public static int stringHashCode(char[] chars, int from, int to) {
     int h = 0;
     for (int off = from; off < to; off++) {
       h = 31 * h + chars[off];
@@ -437,7 +447,7 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static int stringHashCodeInsensitive(char [] chars, int from, int to) {
+  public static int stringHashCodeInsensitive(char[] chars, int from, int to) {
     int h = 0;
     for (int off = from; off < to; off++) {
       h = 31 * h + toLowerCase(chars[off]);
@@ -479,27 +489,24 @@ public final class Strings {
     for (int i = forward ? start : start - 1; forward == i < end; i += forward ? 1 : -1) {
       if (text.charAt(i) == c) {
         count++;
-      }
-      else if (stopAtOtherChar) {
+      } else if (stopAtOtherChar) {
         break;
       }
     }
     return count;
   }
 
-  public static @NotNull StringBuilder escapeToRegexp(@NotNull CharSequence text, @NotNull StringBuilder builder) {
+  public static @NotNull
+  StringBuilder escapeToRegexp(@NotNull CharSequence text, @NotNull StringBuilder builder) {
     for (int i = 0; i < text.length(); i++) {
       final char c = text.charAt(i);
       if (c == ' ' || Character.isLetter(c) || Character.isDigit(c) || c == '_') {
         builder.append(c);
-      }
-      else if (c == '\n') {
+      } else if (c == '\n') {
         builder.append("\\n");
-      }
-      else if (c == '\r') {
+      } else if (c == '\r') {
         builder.append("\\r");
-      }
-      else {
+      } else {
         final Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
         if (block == Character.UnicodeBlock.HIGH_SURROGATES || block == Character.UnicodeBlock.LOW_SURROGATES) {
           builder.append(c);
@@ -516,7 +523,8 @@ public final class Strings {
    * @return {@code text} with some standard XML entities replaced with corresponding characters, e.g. '{@code &lt;}' replaced with '<'
    */
   @Contract(pure = true)
-  public static @NotNull String unescapeXmlEntities(@NotNull String text) {
+  public static @NotNull
+  String unescapeXmlEntities(@NotNull String text) {
     return replace(text, REPLACES_REFS, REPLACES_DISP);
   }
 
@@ -524,12 +532,14 @@ public final class Strings {
    * @return {@code text} with some characters replaced with standard XML entities, e.g. '<' replaced with '{@code &lt;}'
    */
   @Contract(pure = true)
-  public static @NotNull String escapeXmlEntities(@NotNull String text) {
+  public static @NotNull
+  String escapeXmlEntities(@NotNull String text) {
     return replace(text, REPLACES_DISP, REPLACES_REFS);
   }
 
   @Contract(pure = true)
-  public static @NotNull String replace(@NotNull String text, @NotNull List<String> from, @NotNull List<String> to) {
+  public static @NotNull
+  String replace(@NotNull String text, @NotNull List<String> from, @NotNull List<String> to) {
     assert from.size() == to.size();
     StringBuilder result = null;
     replace:
@@ -561,7 +571,8 @@ public final class Strings {
 
 
   @Contract(pure = true)
-  public static @NotNull String join(@NotNull Iterable<?> items, @NotNull String separator) {
+  public static @NotNull
+  String join(@NotNull Iterable<?> items, @NotNull String separator) {
     StringBuilder result = new StringBuilder();
     for (Object item : items) {
       result.append(item).append(separator);
@@ -573,7 +584,8 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String join(@NotNull Collection<String> strings, @NotNull String separator) {
+  public static @NotNull
+  String join(@NotNull Collection<String> strings, @NotNull String separator) {
     if (strings.size() <= 1) {
       return notNullize(strings.isEmpty() ? null : strings.iterator().next());
     }
@@ -588,8 +600,7 @@ public final class Strings {
       if (string != null) {
         if (isFirst) {
           isFirst = false;
-        }
-        else {
+        } else {
           result.append(separator);
         }
         result.append(string);
@@ -598,7 +609,8 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String join(final int [] strings, final @NotNull String separator) {
+  public static @NotNull
+  String join(final int[] strings, final @NotNull String separator) {
     final StringBuilder result = new StringBuilder();
     for (int i = 0; i < strings.length; i++) {
       if (i > 0) result.append(separator);
@@ -608,7 +620,8 @@ public final class Strings {
   }
 
   @Contract(pure = true)
-  public static @NotNull String join(final String  ... strings) {
+  public static @NotNull
+  String join(final String... strings) {
     if (strings.length == 0) return "";
 
     final StringBuilder builder = new StringBuilder();

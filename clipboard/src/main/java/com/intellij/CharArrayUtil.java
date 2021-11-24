@@ -37,20 +37,20 @@ public final class CharArrayUtil {
   /**
    * Copies necessary number of symbols from the given char sequence to the given array.
    *
-   * @param src         source data holder
-   * @param dst         output data buffer
-   * @param srcOffset   source text offset
-   * @param dstOffset   start offset to use within the given output data buffer
-   * @param len         number of source data symbols to copy to the given buffer
+   * @param src       source data holder
+   * @param dst       output data buffer
+   * @param srcOffset source text offset
+   * @param dstOffset start offset to use within the given output data buffer
+   * @param len       number of source data symbols to copy to the given buffer
    */
 
-  public static char [] fromSequenceWithoutCopying(@Nullable CharSequence seq) {
+  public static char[] fromSequenceWithoutCopying(@Nullable CharSequence seq) {
     if (seq instanceof CharSequenceBackedByArray) {
-      return ((CharSequenceBackedByArray)seq).getChars();
+      return ((CharSequenceBackedByArray) seq).getChars();
     }
 
     if (seq instanceof CharBuffer) {
-      final CharBuffer buffer = (CharBuffer)seq;
+      final CharBuffer buffer = (CharBuffer) seq;
       if (buffer.hasArray() && !buffer.isReadOnly() && buffer.arrayOffset() == 0 && buffer.position() == 0) {
         return buffer.array();
       }
@@ -78,13 +78,13 @@ public final class CharArrayUtil {
    * Example:
    * {@code buffer="abc", startOffset=0, endOffset = 3, chars="ab". Result: 2}
    *
-   * @param buffer       target buffer which symbols should be checked
-   * @param startOffset  start offset to use within the given buffer (inclusive)
-   * @param endOffset    end offset to use within the given buffer (exclusive)
-   * @param chars        pass-through symbols
-   * @return             offset from the {@code [startOffset; endOffset)} which points to a symbol at the given buffer such
-   *                     as that that symbol is not contained at the given 'chars';
-   *                     {@code endOffset} otherwise
+   * @param buffer      target buffer which symbols should be checked
+   * @param startOffset start offset to use within the given buffer (inclusive)
+   * @param endOffset   end offset to use within the given buffer (exclusive)
+   * @param chars       pass-through symbols
+   * @return offset from the {@code [startOffset; endOffset)} which points to a symbol at the given buffer such
+   * as that that symbol is not contained at the given 'chars';
+   * {@code endOffset} otherwise
    */
   public static int shiftForward(@NotNull CharSequence buffer, final int startOffset, final int endOffset, @NotNull String chars) {
     for (int offset = startOffset, limit = Math.min(endOffset, buffer.length()); offset < limit; offset++) {
@@ -119,7 +119,7 @@ public final class CharArrayUtil {
     return false;
   }
 
-  public static int shiftForward(char  [] buffer, int offset, @NotNull String chars) {
+  public static int shiftForward(char[] buffer, int offset, @NotNull String chars) {
     return shiftForward(new CharArrayCharSequence(buffer), offset, chars);
   }
 
@@ -148,7 +148,7 @@ public final class CharArrayUtil {
     return offset;
   }
 
-  public static int shiftBackward(char  [] buffer, int offset, @NotNull String chars) {
+  public static int shiftBackward(char[] buffer, int offset, @NotNull String chars) {
     return shiftBackward(new CharArrayCharSequence(buffer), offset, chars);
   }
 
@@ -182,14 +182,14 @@ public final class CharArrayUtil {
    * is returned then, i.e. all symbols of the given buffer that are located after it and not after given offset
    * ({@code 't data'}) are guaranteed to not contain given chars ({@code 'sf'}).
    *
-   * @param buffer      symbols buffer to check
-   * @param offset      initial symbols buffer offset to use
-   * @param chars       chars to exclude
-   * @return            offset of the given buffer that guarantees that all symbols at {@code (returned offset; given offset]}
-   *                    interval of the given buffer differ from symbols of given {@code 'chars'} arguments;
-   *                    given offset is returned if it is outside of given buffer bounds;
-   *                    {@code '-1'} is returned if all document symbols that precede given offset differ from symbols
-   *                    of the given {@code 'chars to exclude'}
+   * @param buffer symbols buffer to check
+   * @param offset initial symbols buffer offset to use
+   * @param chars  chars to exclude
+   * @return offset of the given buffer that guarantees that all symbols at {@code (returned offset; given offset]}
+   * interval of the given buffer differ from symbols of given {@code 'chars'} arguments;
+   * given offset is returned if it is outside of given buffer bounds;
+   * {@code '-1'} is returned if all document symbols that precede given offset differ from symbols
+   * of the given {@code 'chars to exclude'}
    */
   public static int shiftBackwardUntil(@NotNull CharSequence buffer, int offset, @NotNull String chars) {
     if (offset >= buffer.length()) return offset;
@@ -206,7 +206,7 @@ public final class CharArrayUtil {
     return offset;
   }
 
-  public static boolean regionMatches(char  [] buffer, int start, int end, @NotNull CharSequence s) {
+  public static boolean regionMatches(char[] buffer, int start, int end, @NotNull CharSequence s) {
     final int len = s.length();
     if (start + len > end) return false;
     if (start < 0) return false;
@@ -243,11 +243,12 @@ public final class CharArrayUtil {
     }
     return true;
   }
+
   public static boolean regionMatches(@NotNull CharSequence s1, int start1, int end1, @NotNull CharSequence s2, int start2, int end2, boolean caseSensitive) {
     if (caseSensitive) {
       return regionMatches(s1, start1, end1, s2, start2, end2);
     }
-    if (end1-start1 != end2-start2) return false;
+    if (end1 - start1 != end2 - start2) return false;
     assertRegionIndicesInRange(s1.length(), start1, end1, s2.length(), start2, end2);
 
     for (int i = start1, j = start2; i < end1; i++, j++) {
@@ -265,7 +266,7 @@ public final class CharArrayUtil {
     return true;
   }
 
-  public static boolean equals(char  [] buffer1, int start1, int end1, char  [] buffer2, int start2, int end2) {
+  public static boolean equals(char[] buffer1, int start1, int end1, char[] buffer2, int start2, int end2) {
     if (end1 - start1 != end2 - start2) return false;
     for (int i = start1; i < end1; i++) {
       if (buffer1[i] != buffer2[i - start1 + start2]) return false;
@@ -273,7 +274,7 @@ public final class CharArrayUtil {
     return true;
   }
 
-  public static int indexOf(char  [] buffer, @NotNull String pattern, int fromIndex) {
+  public static int indexOf(char[] buffer, @NotNull String pattern, int fromIndex) {
     char[] chars = pattern.toCharArray();
     int limit = buffer.length - chars.length + 1;
     if (fromIndex < 0) {
@@ -296,11 +297,11 @@ public final class CharArrayUtil {
   /**
    * Tries to find index of given pattern at the given buffer.
    *
-   * @param buffer       characters buffer which contents should be checked for the given pattern
-   * @param pattern      target characters sequence to find at the given buffer
-   * @param fromIndex    start index (inclusive). Zero is used if given index is negative
-   * @param toIndex      end index (exclusive)
-   * @return             index of the given pattern at the given buffer if the match is found; {@code -1} otherwise
+   * @param buffer    characters buffer which contents should be checked for the given pattern
+   * @param pattern   target characters sequence to find at the given buffer
+   * @param fromIndex start index (inclusive). Zero is used if given index is negative
+   * @param toIndex   end index (exclusive)
+   * @return index of the given pattern at the given buffer if the match is found; {@code -1} otherwise
    */
   public static int indexOf(@NotNull CharSequence buffer, @NotNull CharSequence pattern, int fromIndex, final int toIndex) {
     final int patternLength = pattern.length();
@@ -321,15 +322,15 @@ public final class CharArrayUtil {
   /**
    * Tries to find index that points to the first location of the given symbol at the given char array at range {@code [from; to)}.
    *
-   * @param buffer      target symbols holder to check
-   * @param symbol      target symbol which offset should be found
-   * @param fromIndex   start index to search (inclusive)
-   * @param toIndex     end index to search (exclusive)
-   * @return            index that points to the first location of the given symbol at the given char array at range
-   *                    {@code [from; to)} if target symbol is found;
-   *                    {@code -1} otherwise
+   * @param buffer    target symbols holder to check
+   * @param symbol    target symbol which offset should be found
+   * @param fromIndex start index to search (inclusive)
+   * @param toIndex   end index to search (exclusive)
+   * @return index that points to the first location of the given symbol at the given char array at range
+   * {@code [from; to)} if target symbol is found;
+   * {@code -1} otherwise
    */
-  public static int indexOf(char  [] buffer, final char symbol, int fromIndex, final int toIndex) {
+  public static int indexOf(char[] buffer, final char symbol, int fromIndex, final int toIndex) {
     if (fromIndex < 0) {
       fromIndex = 0;
     }
@@ -344,15 +345,15 @@ public final class CharArrayUtil {
   /**
    * Tries to find index that points to the last location of the given symbol at the given char array at range {@code [from; to)}.
    *
-   * @param buffer      target symbols holder to check
-   * @param symbol      target symbol which offset should be found
-   * @param fromIndex   start index to search (inclusive)
-   * @param toIndex     end index to search (exclusive)
-   * @return            index that points to the last location of the given symbol at the given char array at range
-   *                    {@code [from; to)} if target symbol is found;
-   *                    {@code -1} otherwise
+   * @param buffer    target symbols holder to check
+   * @param symbol    target symbol which offset should be found
+   * @param fromIndex start index to search (inclusive)
+   * @param toIndex   end index to search (exclusive)
+   * @return index that points to the last location of the given symbol at the given char array at range
+   * {@code [from; to)} if target symbol is found;
+   * {@code -1} otherwise
    */
-  public static int lastIndexOf(char  [] buffer, final char symbol, int fromIndex, final int toIndex) {
+  public static int lastIndexOf(char[] buffer, final char symbol, int fromIndex, final int toIndex) {
     if (fromIndex < 0) {
       fromIndex = 0;
     }
@@ -380,7 +381,7 @@ public final class CharArrayUtil {
     return -1;
   }
 
-  public static int lastIndexOf(char  [] buffer, @NotNull String pattern, int maxIndex) {
+  public static int lastIndexOf(char[] buffer, @NotNull String pattern, int maxIndex) {
     char[] chars = pattern.toCharArray();
     int end = buffer.length - chars.length;
     if (maxIndex > end) {
@@ -423,10 +424,10 @@ public final class CharArrayUtil {
   /**
    * Allows to answer if target region of the given text contains only white space symbols (tabulations, white spaces and line feeds).
    *
-   * @param text      text to check
-   * @param start     start offset within the given text to check (inclusive)
-   * @param end       end offset within the given text to check (exclusive)
-   * @return          {@code true} if target region of the given text contains white space symbols only; {@code false} otherwise
+   * @param text  text to check
+   * @param start start offset within the given text to check (inclusive)
+   * @param end   end offset within the given text to check (exclusive)
+   * @return {@code true} if target region of the given text contains white space symbols only; {@code false} otherwise
    */
   public static boolean isEmptyOrSpaces(@NotNull CharSequence text, int start, int end) {
     for (int i = start; i < end; i++) {

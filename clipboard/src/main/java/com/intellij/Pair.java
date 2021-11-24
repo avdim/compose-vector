@@ -65,7 +65,7 @@ public class Pair<A, B> {
 
   @Override
   public final boolean equals(Object o) {
-    return o instanceof Pair && Comparing.equal(first, ((Pair<?, ?>)o).first) && Comparing.equal(second, ((Pair<?, ?>)o).second);
+    return o instanceof Pair && Comparing.equal(first, ((Pair<?, ?>) o).first) && Comparing.equal(second, ((Pair<?, ?>) o).second);
   }
 
   @Override

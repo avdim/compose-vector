@@ -12,7 +12,7 @@ public abstract class CopyPasteManager {
     return new CopyPasteManagerEx();
   }
 
-  public abstract boolean areDataFlavorsAvailable(DataFlavor ... flavors);
+  public abstract boolean areDataFlavorsAvailable(DataFlavor... flavors);
 
   @Nullable
   public abstract Transferable getContents();

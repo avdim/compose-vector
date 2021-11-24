@@ -26,5 +26,6 @@ public interface PasteProvider {
    * See #12326
    */
   boolean isPastePossible(@NotNull DataContext dataContext);
+
   boolean isPasteEnabled(@NotNull DataContext dataContext);
 }

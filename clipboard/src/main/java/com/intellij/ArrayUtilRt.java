@@ -29,19 +29,19 @@ public final class ArrayUtilRt {
   public static final File[] EMPTY_FILE_ARRAY = new File[0];
 
   @NotNull
-  @Contract(pure=true)
+  @Contract(pure = true)
   public static String[] toStringArray(@Nullable Collection<String> collection) {
     return collection == null || collection.isEmpty()
-           ? EMPTY_STRING_ARRAY : collection.toArray(EMPTY_STRING_ARRAY);
+      ? EMPTY_STRING_ARRAY : collection.toArray(EMPTY_STRING_ARRAY);
   }
 
   /**
    * @param src source array.
    * @param obj object to be found.
    * @return index of {@code obj} in the {@code src} array.
-   *         Returns {@code -1} if passed object isn't found. This method uses
-   *         {@code equals} of arrays elements to compare {@code obj} with
-   *         these elements.
+   * Returns {@code -1} if passed object isn't found. This method uses
+   * {@code equals} of arrays elements to compare {@code obj} with
+   * these elements.
    */
   @Contract(pure = true)
   public static <T> int find(@NotNull T[] src, @Nullable T obj) {
@@ -54,8 +54,7 @@ public final class ArrayUtilRt {
       for (int i = start; i < end; i++) {
         if (src[i] == null) return i;
       }
-    }
-    else {
+    } else {
       for (int i = start; i < end; i++) {
         if (obj.equals(src[i])) return i;
       }

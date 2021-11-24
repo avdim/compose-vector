@@ -9,12 +9,13 @@ import java.awt.datatransfer.Transferable;
 public class CopyPasteManagerEx extends CopyPasteManager {
 
   @Override
-  public boolean areDataFlavorsAvailable(DataFlavor ... flavors) {
+  public boolean areDataFlavorsAvailable(DataFlavor... flavors) {
     return ClientCopyPasteManager.getCurrentInstance().areDataFlavorsAvailable(flavors);
   }
 
   @Override
-  public @Nullable Transferable getContents() {
+  public @Nullable
+  Transferable getContents() {
     return ClientCopyPasteManager.getCurrentInstance().getContents();
   }
 

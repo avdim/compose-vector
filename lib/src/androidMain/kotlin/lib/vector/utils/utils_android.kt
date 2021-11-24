@@ -16,6 +16,6 @@ fun Bitmap.toByteArray(): ByteArray {
   return baos.toByteArray()
 }
 
-fun ByteArray.toAndroidBitmap():Bitmap {
+fun ByteArray.toAndroidBitmap(): Bitmap {
   return BitmapFactory.decodeByteArray(this, 0, size);
 }

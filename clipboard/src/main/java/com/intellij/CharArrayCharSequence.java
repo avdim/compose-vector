@@ -8,11 +8,11 @@ public class CharArrayCharSequence implements CharSequenceBackedByArray, CharSeq
   protected final int myStart;
   protected final int myEnd;
 
-  public CharArrayCharSequence(char ... chars) {
+  public CharArrayCharSequence(char... chars) {
     this(chars, 0, chars.length);
   }
 
-  public CharArrayCharSequence(char [] chars, int start, int end) {
+  public CharArrayCharSequence(char[] chars, int start, int end) {
     if (start < 0 || end > chars.length || start > end) {
       throw new IndexOutOfBoundsException("chars.length:" + chars.length + ", start:" + start + ", end:" + end);
     }
@@ -44,7 +44,7 @@ public class CharArrayCharSequence implements CharSequenceBackedByArray, CharSeq
   }
 
   @Override
-  public char [] getChars() {
+  public char[] getChars() {
     if (myStart == 0) return myChars;
     char[] chars = new char[length()];
     getChars(chars, 0);
@@ -52,7 +52,7 @@ public class CharArrayCharSequence implements CharSequenceBackedByArray, CharSeq
   }
 
   @Override
-  public void getChars(char [] dst, int dstOffset) {
+  public void getChars(char[] dst, int dstOffset) {
     System.arraycopy(myChars, myStart, dst, dstOffset, length());
   }
 
@@ -61,10 +61,10 @@ public class CharArrayCharSequence implements CharSequenceBackedByArray, CharSeq
     if (this == anObject) {
       return true;
     }
-    if (anObject == null || getClass() != anObject.getClass() || length() != ((CharSequence)anObject).length()) {
+    if (anObject == null || getClass() != anObject.getClass() || length() != ((CharSequence) anObject).length()) {
       return false;
     }
-    return CharArrayUtil.regionMatches(myChars, myStart, myEnd, (CharSequence)anObject);
+    return CharArrayUtil.regionMatches(myChars, myStart, myEnd, (CharSequence) anObject);
   }
 
   /**
@@ -79,6 +79,7 @@ public class CharArrayCharSequence implements CharSequenceBackedByArray, CharSeq
   }
 
   private transient int hash;
+
   @Override
   public int hashCode() {
     int h = hash;

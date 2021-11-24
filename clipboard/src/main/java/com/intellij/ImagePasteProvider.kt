@@ -16,7 +16,7 @@ open class ImagePasteProvider : PasteProvider {
   final override fun isPastePossible(dataContext: DataContext): Boolean = true
   final override fun isPasteEnabled(dataContext: DataContext): Boolean =
     CopyPasteManager.getInstance().areDataFlavorsAvailable(imageFlavor)
-    && isEnabledForDataContext(dataContext)
+      && isEnabledForDataContext(dataContext)
 //    && dataContext.getData(CommonDataKeys.VIRTUAL_FILE) != null
 
   open fun isEnabledForDataContext(dataContext: DataContext): Boolean = true
@@ -26,8 +26,7 @@ open class ImagePasteProvider : PasteProvider {
     // Step 1: Obtain image data from the clipboard
     val imageToPaste: BufferedImage? = try {
       pasteContents.getTransferData(imageFlavor)
-    }
-    catch (ioException: IOException) {
+    } catch (ioException: IOException) {
       //todo catch IOException
       ioException.printStackTrace()
       println("Failed to get data from the clipboard. Data is no longer available. Aborting operation.")
@@ -62,13 +61,12 @@ fun Image.toBufferedImage() = let { img ->
   }
 }
 
-fun getClipboardImage():BufferedImage? {
+fun getClipboardImage(): BufferedImage? {
   val pasteContents = CopyPasteManager.getInstance().contents ?: return null
   // Step 1: Obtain image data from the clipboard
   val imageToPaste: BufferedImage? = try {
     pasteContents.getTransferData(imageFlavor)
-  }
-  catch (ioException: IOException) {
+  } catch (ioException: IOException) {
     //todo catch IOException
     ioException.printStackTrace()
     println("Failed to get data from the clipboard. Data is no longer available. Aborting operation.")

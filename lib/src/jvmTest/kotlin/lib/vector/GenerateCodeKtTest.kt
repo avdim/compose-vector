@@ -9,19 +9,19 @@ class GenerateCodeKtTest {
     assertEquals(
       """ """,
       generateCode(
-          listOf(
-            Element.Curve(
-              listOf(
-                Pt(0, 0), Pt(100, 100)
-              )
-            ),
-            Element.Curve(
-              listOf(
-                Pt(0, 0), Pt(100, 100)
-              )
-            ),
+        listOf(
+          Element.Curve(
+            listOf(
+              Pt(0, 0), Pt(100, 100)
+            )
           ),
-          mapIdToPoint
+          Element.Curve(
+            listOf(
+              Pt(0, 0), Pt(100, 100)
+            )
+          ),
+        ),
+        mapIdToPoint
       )
     )
   }

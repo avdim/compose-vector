@@ -37,10 +37,10 @@ public final class ReflectionUtilRt {
     Field field = findField(objectClass, fieldName, fieldType);
     if (field != null) {
       try {
-        @SuppressWarnings("unchecked") T t = (T)field.get(object);
+        @SuppressWarnings("unchecked") T t = (T) field.get(object);
         return t;
+      } catch (IllegalAccessException ignored) {
       }
-      catch (IllegalAccessException ignored) { }
     }
 
     return null;
@@ -71,6 +71,7 @@ public final class ReflectionUtilRt {
 
   private static final class MySecurityManager extends SecurityManager {
     private static final MySecurityManager INSTANCE = new MySecurityManager();
+
     Class<?>[] getStack() {
       return getClassContext();
     }
@@ -78,7 +79,7 @@ public final class ReflectionUtilRt {
 
   /**
    * Returns the class this method was called 'framesToSkip' frames up the caller hierarchy.
-   *
+   * <p>
    * NOTE:
    * <b>Extremely expensive!
    * Please consider not using it.
@@ -90,8 +91,7 @@ public final class ReflectionUtilRt {
       Class<?>[] stack = MySecurityManager.INSTANCE.getStack();
       int indexFromTop = 1 + framesToSkip;
       return stack.length > indexFromTop ? stack[indexFromTop] : null;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
 //      LoggerRt.getInstance(ReflectionUtilRt.class).warn(e);
       return null;
     }

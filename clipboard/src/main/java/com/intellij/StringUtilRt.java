@@ -27,8 +27,7 @@ public class StringUtilRt {
           return false;
         }
       }
-    }
-    else {
+    } else {
       for (int i = 0; i < s1.length(); i++) {
         if (!charsEqualIgnoreCase(s1.charAt(i), s2.charAt(i))) {
           return false;
@@ -47,14 +46,14 @@ public class StringUtilRt {
   @Contract(pure = true)
   public static char toUpperCase(char a) {
     if (a < 'a') return a;
-    if (a <= 'z') return (char)(a + ('A' - 'a'));
+    if (a <= 'z') return (char) (a + ('A' - 'a'));
     return Character.toUpperCase(a);
   }
 
   @Contract(pure = true)
   public static char toLowerCase(char a) {
     if (a <= 'z') {
-      return a >= 'A' && a <= 'Z' ? (char)(a + ('a' - 'A')) : a;
+      return a >= 'A' && a <= 'Z' ? (char) (a + ('a' - 'A')) : a;
     }
     return Character.toLowerCase(a);
   }
@@ -117,21 +116,17 @@ public class StringUtilRt {
           }
           buffer.append(newSeparator);
           shiftOffsets(offsetsToKeep, buffer.length(), 1, newSeparator.length());
-        }
-        else if (buffer == null) {
+        } else if (buffer == null) {
           intactLength++;
-        }
-        else {
+        } else {
           buffer.append('\n');
         }
-      }
-      else if (c == '\r') {
+      } else if (c == '\r') {
         boolean followedByLineFeed = i < text.length() - 1 && text.charAt(i + 1) == '\n';
         if (!followedByLineFeed && keepCarriageReturn) {
           if (buffer == null) {
             intactLength++;
-          }
-          else {
+          } else {
             buffer.append('\r');
           }
           continue;
@@ -145,15 +140,12 @@ public class StringUtilRt {
           //noinspection AssignmentToForLoopParameter
           i++;
           shiftOffsets(offsetsToKeep, buffer.length(), 2, newSeparator.length());
-        }
-        else {
+        } else {
           shiftOffsets(offsetsToKeep, buffer.length(), 1, newSeparator.length());
         }
-      }
-      else if (buffer == null) {
+      } else if (buffer == null) {
         intactLength++;
-      }
-      else {
+      } else {
         buffer.append(c);
       }
     }
@@ -175,8 +167,10 @@ public class StringUtilRt {
   @Contract(pure = true)
   public static int parseInt(@Nullable String string, int defaultValue) {
     if (string != null) {
-      try { return Integer.parseInt(string); }
-      catch (NumberFormatException ignored) { }
+      try {
+        return Integer.parseInt(string);
+      } catch (NumberFormatException ignored) {
+      }
     }
     return defaultValue;
   }
@@ -184,8 +178,10 @@ public class StringUtilRt {
   @Contract(pure = true)
   public static long parseLong(@Nullable String string, long defaultValue) {
     if (string != null) {
-      try { return Long.parseLong(string); }
-      catch (NumberFormatException ignored) { }
+      try {
+        return Long.parseLong(string);
+      } catch (NumberFormatException ignored) {
+      }
     }
     return defaultValue;
   }
@@ -193,8 +189,10 @@ public class StringUtilRt {
   @Contract(pure = true)
   public static double parseDouble(@Nullable String string, double defaultValue) {
     if (string != null) {
-      try { return Double.parseDouble(string); }
-      catch (NumberFormatException ignored) { }
+      try {
+        return Double.parseDouble(string);
+      } catch (NumberFormatException ignored) {
+      }
     }
     return defaultValue;
   }
@@ -203,8 +201,7 @@ public class StringUtilRt {
   static <E extends Enum<E>> E parseEnum(@NotNull String string, E defaultValue, @NotNull Class<E> clazz) {
     try {
       return Enum.valueOf(clazz, string);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       return defaultValue;
     }
   }
@@ -295,7 +292,7 @@ public class StringUtilRt {
     return -1;
   }
 
-  @Contract(value = "null -> true",pure = true)
+  @Contract(value = "null -> true", pure = true)
   public static boolean isEmpty(@Nullable CharSequence cs) {
     return cs == null || cs.length() == 0;
   }
@@ -362,7 +359,7 @@ public class StringUtilRt {
   public static String formatFileSize(long fileSize, @NotNull String unitSeparator) {
     if (fileSize < 0) throw new IllegalArgumentException("Invalid value: " + fileSize);
     if (fileSize == 0) return '0' + unitSeparator + 'B';
-    int rank = (int)((Math.log10(fileSize) + 0.0000021714778384307465) / 3);  // (3 - Math.log10(999.995))
+    int rank = (int) ((Math.log10(fileSize) + 0.0000021714778384307465) / 3);  // (3 - Math.log10(999.995))
     double value = fileSize / Math.pow(1000, rank);
     String[] units = {"B", "kB", "MB", "GB", "TB", "PB", "EB"};
     return new DecimalFormat("0.##").format(value) + unitSeparator + units[rank];

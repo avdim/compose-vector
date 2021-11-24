@@ -11,7 +11,8 @@ import java.util.*;
  * Null-safe {@code equal} methods.
  */
 public final class Comparing {
-  private Comparing() { }
+  private Comparing() {
+  }
 
   @Contract(value = "null,!null -> false; !null,null -> false; null,null -> true", pure = true)
   public static <T> boolean equal(@Nullable T arg1, @Nullable T arg2) {
@@ -20,17 +21,19 @@ public final class Comparing {
       return false;
     }
     if (arg1 instanceof Object[] && arg2 instanceof Object[]) {
-      Object[] arr1 = (Object[])arg1;
-      Object[] arr2 = (Object[])arg2;
+      Object[] arr1 = (Object[]) arg1;
+      Object[] arr2 = (Object[]) arg2;
       return Arrays.equals(arr1, arr2);
     }
     if (arg1 instanceof CharSequence && arg2 instanceof CharSequence) {
-      return equal((CharSequence)arg1, (CharSequence)arg2, true);
+      return equal((CharSequence) arg1, (CharSequence) arg2, true);
     }
     return arg1.equals(arg2);
   }
 
-  /** @deprecated same as {@link Arrays#equals(Object[], Object[])} */
+  /**
+   * @deprecated same as {@link Arrays#equals(Object[], Object[])}
+   */
   public static <T> boolean equal(@Nullable T[] arr1, @Nullable T[] arr2) {
     return Arrays.equals(arr1, arr2);
   }
@@ -59,12 +62,16 @@ public final class Comparing {
     return arg1 == null ? arg2 == null : caseSensitive ? arg1.equals(arg2) : arg1.equalsIgnoreCase(arg2);
   }
 
-  /** Unlike {@link Objects#equals(Object, Object)}, considers {@code null} and {@code ""} equal. */
+  /**
+   * Unlike {@link Objects#equals(Object, Object)}, considers {@code null} and {@code ""} equal.
+   */
   public static boolean strEqual(@Nullable String arg1, @Nullable String arg2) {
     return strEqual(arg1, arg2, true);
   }
 
-  /** Unlike {@link #equal(String, String, boolean)}, considers {@code null} and {@code ""} equal. */
+  /**
+   * Unlike {@link #equal(String, String, boolean)}, considers {@code null} and {@code ""} equal.
+   */
   public static boolean strEqual(@Nullable String arg1, @Nullable String arg2, boolean caseSensitive) {
     return equal(arg1 == null ? "" : arg1, arg2 == null ? "" : arg2, caseSensitive);
   }

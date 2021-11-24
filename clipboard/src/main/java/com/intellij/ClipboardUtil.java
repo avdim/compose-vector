@@ -13,19 +13,15 @@ public final class ClipboardUtil {
   public static <E> E handleClipboardSafely(@NotNull Supplier<? extends E> supplier, E defaultValue) {
     try {
       return supplier.get();
-    }
-    catch (IllegalStateException e) {
+    } catch (IllegalStateException e) {
       if (SystemInfo.isWindows) {
         LOG.debug("Clipboard is busy");
-      }
-      else {
+      } else {
         LOG.warn(e);
       }
-    }
-    catch (NullPointerException e) {
+    } catch (NullPointerException e) {
       LOG.warn("Java bug #6322854", e);
-    }
-    catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       LOG.warn("Java bug #7173464", e);
     }
 

@@ -11,7 +11,7 @@ public class LocalCopyPasteManager implements ClientCopyPasteManager {
   public static final ClipboardSynchronizer CLIPBOARD_SYNCHRONIZER = new ClipboardSynchronizer();
 
   @Override
-  public boolean areDataFlavorsAvailable(DataFlavor ... flavors) {
+  public boolean areDataFlavorsAvailable(DataFlavor... flavors) {
     return flavors.length > 0 && CLIPBOARD_SYNCHRONIZER.areDataFlavorsAvailable(flavors);
   }
 

@@ -13,3 +13,11 @@ inline fun Path.lineTo(x: Int, y: Int) {
 
 expect fun ImageBitmap.toByteArray(): ByteArray
 expect fun ByteArray.toImageBitmap(): ImageBitmap
+
+fun <T> List<T>.indexOfFirstOrNull(lambda:(T)->Boolean):Int? {
+  val result = indexOfFirst(lambda)
+  if (result == -1) {
+    return null
+  }
+  return result
+}

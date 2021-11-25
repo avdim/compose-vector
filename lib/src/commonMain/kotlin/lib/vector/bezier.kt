@@ -45,3 +45,26 @@ fun calcBezier3Pt(t: Float, p0: Pt, p1: Pt, p2: Pt, p3: Pt): Pt {
   val mt3 = mt2 * mt
   return p0 * mt3 + 3 * p1 * mt2 * t + 3 * p2 * mt * t2 + p3 * t3
 }
+
+fun BezierSegment.split(t: Float):Pair<BezierSegment, BezierSegment> {
+  TODO()
+  // https://pomax.github.io/bezierinfo/index.html#splitting
+  /**
+  left=[]
+  right=[]
+  function drawCurvePoint(points[], t):
+  if(points.length==1):
+  left.add(points[0])
+  right.add(points[0])
+  draw(points[0])
+  else:
+  newpoints=array(points.size-1)
+  for(i=0; i<newpoints.length; i++):
+  if(i==0):
+  left.add(points[i])
+  if(i==newpoints.length-1):
+  right.add(points[i+1])
+  newpoints[i] = (1-t) * points[i] + t * points[i+1]
+  drawCurvePoint(newpoints, t)
+   */
+}

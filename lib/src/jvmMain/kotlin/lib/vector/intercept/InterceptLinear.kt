@@ -3,7 +3,7 @@ package lib.vector.intercept
 import lib.vector.BezierSegment
 import lib.vector.Pt
 
-fun interceptLinear(a: BezierSegment, b: BezierSegment): Pt? {
+fun interceptLinear(a: BezierSegment, b: BezierSegment): List<Pt> {
   val a1 = a.start
   val a2 = a.end
   val b1 = b.start
@@ -41,5 +41,9 @@ fun interceptLinear(a: BezierSegment, b: BezierSegment): Pt? {
   }
 
   val interceptedPoint = intercept(a1.x, a1.y, a2.x, a2.y, b1.x, b1.y, b2.x, b2.y)
-  return interceptedPoint
+  if (interceptedPoint != null) {
+    return listOf(interceptedPoint)
+  } else {
+    return emptyList()
+  }
 }

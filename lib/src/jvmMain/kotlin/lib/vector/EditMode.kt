@@ -323,11 +323,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       for (j in i + 1 until allSegments.size) {
         val a: BezierSegment = allSegments[i]
         val b: BezierSegment = allSegments[j]
-        val interceptedPoint = interceptLinear(a, b)
-        if (interceptedPoint != null) {
-          drawCircle(Color.Black, 5f, center = interceptedPoint.offset)
+        val interceptedPoints = interceptLinear(a, b)
+        interceptedPoints.forEach {
+          drawCircle(Color.Black, 5f, center = it.offset)
         }
-
       }
     }
   }

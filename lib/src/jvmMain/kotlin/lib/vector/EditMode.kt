@@ -329,6 +329,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         }
       }
     }
+    allSegments.forEach { s->
+      s.points(10).forEach {
+        drawCircle(Color.Yellow, 3f, center = it.offset)
+      }
+    }
   }
   when (controllerState.options) {
     is DrawOptions.Selection -> {

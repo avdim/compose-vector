@@ -9,5 +9,7 @@ val Pt.offset: Offset get() = Offset(x, y)
 infix operator fun Pt.minus(other: Pt): Pt = Pt(x - other.x, y - other.y)
 infix operator fun Pt.plus(other: Pt): Pt = Pt(x + other.x, y + other.y)
 infix operator fun Pt.times(scale: Float): Pt = Pt(x * scale, y * scale)
+infix operator fun Float.times(pt: Pt): Pt = pt.times(this)
+infix operator fun Int.times(pt: Pt): Pt = pt.times(this.toFloat())
 infix operator fun Pt.div(divider: Float): Pt = this * (1f / divider)
 

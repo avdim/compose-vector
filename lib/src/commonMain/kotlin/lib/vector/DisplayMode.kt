@@ -9,10 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.*
 import lib.vector.utils.toImageBitmap
 
 const val DEFAULT_BEZIER_SCALE = 0.5f
@@ -35,7 +32,7 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 drawCircle(Color.Red, 2f, result.refStart.offset)
                 drawCircle(Color.Green, 2f, result.refEnd.offset)
                 with(result) {
-                  cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, s.end.x, s.end.y)
+                  cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
 //                lineTo(to.x, to.y)
                 }
               }

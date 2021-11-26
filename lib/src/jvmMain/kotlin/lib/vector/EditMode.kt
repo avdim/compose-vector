@@ -11,6 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.isPrimaryPressed
@@ -325,14 +328,25 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         val b: BezierSegment = allSegments[j]
         val interceptedPoints = interceptLinear(a, b)
         interceptedPoints.forEach {
-          drawCircle(Color.Black, 5f, center = it.offset)
+          drawCircle(Color.Black, 2f, center = it.offset)
         }
       }
     }
-    allSegments.forEach { s->
+    if (false) allSegments.forEach { s ->
       s.points(10).forEach {
         drawCircle(Color.Yellow, 3f, center = it.offset)
       }
+      val (s1, s2) = s.split(0.5f)
+      drawPath(
+        path = s1.toPath(),
+        color = Color.Yellow,
+        style = if (FILL_PATH) Fill else Stroke(width = 2f)
+      )
+      drawPath(
+        path = s2.toPath(),
+        color = Color.Green,
+        style = if (FILL_PATH) Fill else Stroke(width = 2f)
+      )
     }
   }
   when (controllerState.options) {

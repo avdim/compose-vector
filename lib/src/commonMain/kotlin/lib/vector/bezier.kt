@@ -1,5 +1,7 @@
 package lib.vector
 
+import androidx.compose.ui.graphics.Path
+
 class BezierSegment(val start: Pt, val end: Pt, val refStart: Pt, val refEnd: Pt)
 
 fun LineSegment<Pt>.bezierSegment(startRef: Pt?, endRef: Pt?): BezierSegment {
@@ -46,25 +48,40 @@ fun calcBezier3Pt(t: Float, p0: Pt, p1: Pt, p2: Pt, p3: Pt): Pt {
   return p0 * mt3 + 3 * p1 * mt2 * t + 3 * p2 * mt * t2 + p3 * t3
 }
 
-fun BezierSegment.split(t: Float):Pair<BezierSegment, BezierSegment> {
-  TODO()
+fun BezierSegment.split(t: Float): Pair<BezierSegment, BezierSegment> {
   // https://pomax.github.io/bezierinfo/index.html#splitting
-  /**
-  left=[]
-  right=[]
-  function drawCurvePoint(points[], t):
-  if(points.length==1):
-  left.add(points[0])
-  right.add(points[0])
-  draw(points[0])
-  else:
-  newpoints=array(points.size-1)
-  for(i=0; i<newpoints.length; i++):
-  if(i==0):
-  left.add(points[i])
-  if(i==newpoints.length-1):
-  right.add(points[i+1])
-  newpoints[i] = (1-t) * points[i] + t * points[i+1]
-  drawCurvePoint(newpoints, t)
-   */
+
+  val left = mutableListOf<Pt>()
+  val right = mutableListOf<Pt>()
+
+  fun drawCurvePoint(points: List<Pt>, t: Float) {
+    if (points.size == 1) {
+      left.add(points.first())
+      right.add(points.last())
+//      draw(points[0])
+    } else if (points.size > 1) {
+      left.add(points.first())
+      right.add(points.last())
+      val newpoints = (0 until (points.size - 1)).map { i ->
+        (1 - t) * points[i] + t * points[i + 1]
+      }
+      drawCurvePoint(newpoints, t)
+    }
+  }
+  drawCurvePoint(listOf(start, refStart, refEnd, end), t)
+  fun MutableList<Pt>.toSegment() =
+    BezierSegment(start = get(0), end = get(3), refStart = get(1), refEnd = get(2))
+
+  return left.toSegment() to right.toSegment()
 }
+
+fun BezierSegment.toPath(): Path =
+  Path().apply {
+    val start = start
+    moveTo(start.x, start.y)
+    val result = this@toPath
+    with(result) {
+      cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
+//                lineTo(to.x, to.y)
+    }
+  }

@@ -35,9 +35,10 @@ private fun calcDefaultBezierReferences(before: Pt, start: Pt, end: Pt, after: P
   )
 }
 
-fun BezierSegment.points(count: Int): List<Pt> = (0..count).map { it.toFloat() / count }.map {
-  calcBezier3Pt(it, start, refStart, refEnd, end)
-}
+fun BezierSegment.points(count: Int): List<Pt> = (0..count).map { it.toFloat() / count }.map { point(it) }
+
+fun BezierSegment.point(t: Float):Pt =
+  calcBezier3Pt(t, start, refStart, refEnd, end)
 
 fun calcBezier3Pt(t: Float, p0: Pt, p1: Pt, p2: Pt, p3: Pt): Pt {
   val t2 = t * t
@@ -75,24 +76,25 @@ fun BezierSegment.split(t: Float): Pair<BezierSegment, BezierSegment> {
   return left.toSegment() to right.toSegment()
 }
 
-fun BezierSegment.aabb(): Rect {
-  val p1 = start
-  val p2 = refStart
-  val p3 = refEnd
-  val p4 = end
-  val a = 3 * (3 * p2 - p1 - 3 * p3 + p4)
-  val b = 6 * (p1 - 2 * p2 + p3)
-  val c = 3 * (p2 - p1)
-  val xExtremum = listOf(start.x, end.x) + solveRoots(a.x, b.x, c.x).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).x }
-  val yExtremum = listOf(start.y, end.y) + solveRoots(a.y, b.y, c.y).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).y }
-  val min = Pt(xExtremum.minOrNull()!!, yExtremum.minOrNull()!!)
-  val max = Pt(xExtremum.maxOrNull()!!, yExtremum.maxOrNull()!!)
-  val size = max - min
-  return Rect(
-    topLeft = min,
-    size = size,
-  )
-}
+val BezierSegment.aabb: Rect
+  get() {
+    val p1 = start
+    val p2 = refStart
+    val p3 = refEnd
+    val p4 = end
+    val a = 3 * (3 * p2 - p1 - 3 * p3 + p4)
+    val b = 6 * (p1 - 2 * p2 + p3)
+    val c = 3 * (p2 - p1)
+    val xExtremum = listOf(start.x, end.x) + solveRoots(a.x, b.x, c.x).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).x }
+    val yExtremum = listOf(start.y, end.y) + solveRoots(a.y, b.y, c.y).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).y }
+    val min = Pt(xExtremum.minOrNull()!!, yExtremum.minOrNull()!!)
+    val max = Pt(xExtremum.maxOrNull()!!, yExtremum.maxOrNull()!!)
+    val size = Size(max - min)
+    return Rect(
+      topLeft = min,
+      size = size,
+    )
+  }
 
 fun BezierSegment.toPath(): Path =
   Path().apply {
@@ -104,3 +106,6 @@ fun BezierSegment.toPath(): Path =
 //                lineTo(to.x, to.y)
     }
   }
+
+val BezierSegment.length:Double get() = points(10).windowed(2).sumOf { (a,b) -> a.distance(b) }
+val BezierSegment.lengthF:Float get() = length.toFloat()

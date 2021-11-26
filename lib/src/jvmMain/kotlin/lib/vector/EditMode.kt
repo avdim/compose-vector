@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
+import lib.vector.intercept.interceptCubicBezier
 import lib.vector.intercept.interceptLinear
 import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
@@ -36,6 +37,7 @@ const val CURVE_PRECISION = 25f
 sealed class DrawOptions {
   class Selection : DrawOptions()
   class BezierReference : DrawOptions()
+  class InterceptedPoints : DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -94,6 +96,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       listOf(
         ControllerState("Selection", DrawOptions.Selection()),
         ControllerState("BezierReference", DrawOptions.BezierReference()),
+        ControllerState("InterceptedPoints", DrawOptions.InterceptedPoints()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
@@ -189,6 +192,9 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         null
       }
       is DrawOptions.BezierReference -> {
+        null
+      }
+      is DrawOptions.InterceptedPoints -> {
         null
       }
       is DrawOptions.Curve -> {
@@ -309,57 +315,6 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  Canvas(
-    modifier.wrapContentSize(Alignment.Center)
-      .fillMaxSize()
-  ) {
-    val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve ->
-      curve.points.toLineSegments().map {
-        it.map { it.pt(mapIdToPoint) }.bezierSegment(
-          startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
-          endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
-        )
-      }
-    }
-
-    for (i in 0 until allSegments.size) {
-      for (j in i + 1 until allSegments.size) {
-        val a: BezierSegment = allSegments[i]
-        val b: BezierSegment = allSegments[j]
-        val interceptedPoints = interceptLinear(a, b)
-        interceptedPoints.forEach {
-          drawCircle(Color.Black, 2f, center = it.offset)
-        }
-      }
-    }
-    allSegments.forEach { s ->
-      val r = s.aabb()
-      drawRect(
-        topLeft = r.topLeft.offset,
-        size = r.size.size,
-        color = Color.Black,
-        style = Stroke(width = 1f),
-      )
-      if (false) {
-        s.points(10).forEach {
-          drawCircle(Color.Yellow, 3f, center = it.offset)
-        }
-      }
-      if (false) {
-        val (s1, s2) = s.split(0.5f)
-        drawPath(
-          path = s1.toPath(),
-          color = Color.Yellow,
-          style = if (FILL_PATH) Fill else Stroke(width = 2f)
-        )
-        drawPath(
-          path = s2.toPath(),
-          color = Color.Green,
-          style = if (FILL_PATH) Fill else Stroke(width = 2f)
-        )
-      }
-    }
-  }
   when (controllerState.options) {
     is DrawOptions.Selection -> {
       Canvas(
@@ -456,6 +411,42 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       ) {
         bezierPoints.forEach {
           drawCircle(Color.Red, 5f, center = it.offset)
+        }
+      }
+    }
+    is DrawOptions.InterceptedPoints -> {
+      Canvas(
+        modifier.wrapContentSize(Alignment.Center)
+          .fillMaxSize()
+      ) {
+        val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve ->
+          curve.points.toLineSegments().map {
+            it.map { it.pt(mapIdToPoint) }.bezierSegment(
+              startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
+              endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
+            )
+          }
+        }
+        for (i in 0 until allSegments.size) {
+          for (j in i + 1 until allSegments.size) {
+            //todo N^2
+            val a: BezierSegment = allSegments[i]
+            val b: BezierSegment = allSegments[j]
+            val interceptedPoints = interceptCubicBezier(a, b)
+            interceptedPoints.points.forEach { pt ->
+              drawCircle(Color.Black, 3f, center = pt.offset)
+            }
+            if (false) {
+              interceptedPoints.relativePointsA.forEach {
+                val interceptedPoint = a.point(it)
+                drawCircle(Color.Black, 3f, center = interceptedPoint.offset)
+              }
+              interceptedPoints.relativePointsB.forEach {
+                val interceptedPoint = b.point(it)
+                drawCircle(Color.Black, 3f, center = interceptedPoint.offset)
+              }
+            }
+          }
         }
       }
     }

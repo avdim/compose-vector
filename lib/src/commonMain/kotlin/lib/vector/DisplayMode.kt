@@ -29,8 +29,8 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               moveTo(start.x, start.y)
               points.toLineSegments().forEach { s ->
                 val result = s.bezierSegment(bezierRef[s.start]?.startRef, bezierRef[s.end]?.endRef)
-                drawCircle(Color.Red, 2f, result.refStart.offset)
-                drawCircle(Color.Green, 2f, result.refEnd.offset)
+//                drawCircle(Color.Red, 2f, result.refStart.offset)
+//                drawCircle(Color.Green, 2f, result.refEnd.offset)
                 with(result) {
                   cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
 //                lineTo(to.x, to.y)

@@ -75,6 +75,25 @@ fun BezierSegment.split(t: Float): Pair<BezierSegment, BezierSegment> {
   return left.toSegment() to right.toSegment()
 }
 
+fun BezierSegment.aabb(): Rect {
+  val p1 = start
+  val p2 = refStart
+  val p3 = refEnd
+  val p4 = end
+  val a = 3 * (3 * p2 - p1 - 3 * p3 + p4)
+  val b = 6 * (p1 - 2 * p2 + p3)
+  val c = 3 * (p2 - p1)
+  val xExtremum = listOf(start.x, end.x) + solveRoots(a.x, b.x, c.x).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).x }
+  val yExtremum = listOf(start.y, end.y) + solveRoots(a.y, b.y, c.y).filter { it > 0 && it < 1 }.map { calcBezier3Pt(it, p1, p2, p3, p4).y }
+  val min = Pt(xExtremum.minOrNull()!!, yExtremum.minOrNull()!!)
+  val max = Pt(xExtremum.maxOrNull()!!, yExtremum.maxOrNull()!!)
+  val size = max - min
+  return Rect(
+    topLeft = min,
+    size = size,
+  )
+}
+
 fun BezierSegment.toPath(): Path =
   Path().apply {
     val start = start

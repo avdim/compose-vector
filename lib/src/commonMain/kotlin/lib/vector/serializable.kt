@@ -12,6 +12,7 @@ interface Pt {
 fun Pt(x: Float, y: Float) = PtDisplay(x, y)
 fun Pt(x: Int, y: Int) = PtDisplay(x.toFloat(), y.toFloat())
 data class PtDisplay(override val x: Float, override val y: Float) : Pt
+data class Rect(val topLeft: Pt, val size: Pt)
 
 data class Id(val value: Long, val name: String? = null)
 data class PtEdit(override val x: Float, override val y: Float, val id: Id) : Pt
@@ -23,8 +24,8 @@ infix fun Pt.distance(other: Pt): Double {
 }
 
 data class BezierRef(
-  val startRef: Pt?,
-  val endRef: Pt?
+  val startRef: Pt? = null,
+  val endRef: Pt? = null
 )
 
 data class BezierRefEdit(
@@ -34,7 +35,7 @@ data class BezierRefEdit(
 
 sealed class Element {
   data class Curve(val color: ULong, val points: List<Id>, val bezierRef: Map<Id, BezierRefEdit>) : Element()
-  data class Rect(val color: ULong, val start: Id, val end: Id) : Element()
+  data class Rectangle(val color: ULong, val start: Id, val end: Id) : Element()
   data class Bitmap(val topLeft: Id, val byteArray: ByteArray) : Element() {
     constructor(topLeft: Id, base64Str: String) : this(topLeft, base64Str.fromBase64())
   }

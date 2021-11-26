@@ -31,7 +31,7 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
               append(")")
               append(")")
             }
-            is Element.Rect -> {
+            is Element.Rectangle -> {
               append("drawRect(")
               append("${e.color.literalStr},")
               append("${e.start.constructorPtOrLink(mapIdToPoint)},")

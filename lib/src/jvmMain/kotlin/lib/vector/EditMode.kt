@@ -77,7 +77,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
 
     override fun drawRect(color: ULong, start: Pt, end: Pt) {
-      generatedElements.add(Element.Rect(color, mapPtToId(start), mapPtToId(end)))
+      generatedElements.add(Element.Rectangle(color, mapPtToId(start), mapPtToId(end)))
     }
 
     override fun drawBitmap(pt: Pt, byteArray: ByteArray) {
@@ -224,7 +224,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       is DrawOptions.Rect -> {
         val points = currentPoints
         if (points != null && points.size >= 2) {
-          Element.Rect(options.color, points.first(), points.last())
+          Element.Rectangle(options.color, points.first(), points.last())
         } else {
           null
         }
@@ -283,7 +283,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                   usedIds.addAll(e.points)
                   usedIds.addAll(e.bezierRef.values.flatMap { listOfNotNull(it.startRef, it.endRef) })
                 }
-                is Element.Rect -> {
+                is Element.Rectangle -> {
                   usedIds.add(e.start)
                   usedIds.add(e.end)
                 }
@@ -303,7 +303,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         is Element.Curve -> {
           drawCurve(e.color, e.points.pts(mapIdToPoint), e.bezierRef.pt(mapIdToPoint))
         }
-        is Element.Rect -> drawRect(e.color, e.start.pt(mapIdToPoint), e.end.pt(mapIdToPoint))
+        is Element.Rectangle -> drawRect(e.color, e.start.pt(mapIdToPoint), e.end.pt(mapIdToPoint))
         is Element.Bitmap -> drawBitmap(e.topLeft.pt(mapIdToPoint), e.byteArray)
       }
     }
@@ -313,7 +313,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     modifier.wrapContentSize(Alignment.Center)
       .fillMaxSize()
   ) {
-    val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve->
+    val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve ->
       curve.points.toLineSegments().map {
         it.map { it.pt(mapIdToPoint) }.bezierSegment(
           startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
@@ -332,21 +332,32 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         }
       }
     }
-    if (false) allSegments.forEach { s ->
-      s.points(10).forEach {
-        drawCircle(Color.Yellow, 3f, center = it.offset)
+    allSegments.forEach { s ->
+      val r = s.aabb()
+      drawRect(
+        topLeft = r.topLeft.offset,
+        size = r.size.size,
+        color = Color.Black,
+        style = Stroke(width = 1f),
+      )
+      if (false) {
+        s.points(10).forEach {
+          drawCircle(Color.Yellow, 3f, center = it.offset)
+        }
       }
-      val (s1, s2) = s.split(0.5f)
-      drawPath(
-        path = s1.toPath(),
-        color = Color.Yellow,
-        style = if (FILL_PATH) Fill else Stroke(width = 2f)
-      )
-      drawPath(
-        path = s2.toPath(),
-        color = Color.Green,
-        style = if (FILL_PATH) Fill else Stroke(width = 2f)
-      )
+      if (false) {
+        val (s1, s2) = s.split(0.5f)
+        drawPath(
+          path = s1.toPath(),
+          color = Color.Yellow,
+          style = if (FILL_PATH) Fill else Stroke(width = 2f)
+        )
+        drawPath(
+          path = s2.toPath(),
+          color = Color.Green,
+          style = if (FILL_PATH) Fill else Stroke(width = 2f)
+        )
+      }
     }
   }
   when (controllerState.options) {

@@ -2,7 +2,12 @@ package lib.vector
 
 import androidx.compose.ui.graphics.Path
 
-class BezierSegment(val start: Pt, val end: Pt, val refStart: Pt, val refEnd: Pt)
+data class BezierSegment(val start: Pt, val end: Pt, val refStart: Pt, val refEnd: Pt)
+
+val BezierSegment.p1 get():Pt = start
+val BezierSegment.p2 get():Pt = refStart
+val BezierSegment.p3 get():Pt = refEnd
+val BezierSegment.p4 get():Pt = end
 
 fun LineSegment<Pt>.bezierSegment(startRef: Pt?, endRef: Pt?): BezierSegment {
   val defaultBezierReferences by lazy(mode = LazyThreadSafetyMode.NONE) {
@@ -49,6 +54,13 @@ fun calcBezier3Pt(t: Float, p0: Pt, p1: Pt, p2: Pt, p3: Pt): Pt {
   return p0 * mt3 + 3 * p1 * mt2 * t + 3 * p2 * mt * t2 + p3 * t3
 }
 
+fun calcBezier2Pt(t: Float, p0: Pt, p1: Pt, p2: Pt): Pt {
+  val t2 = t * t
+  val mt = 1 - t
+  val mt2 = mt * mt
+  return p0 * mt2 + p1 * 2f * mt * t + p2 * t2
+}
+
 fun BezierSegment.point2(t: Float): Pt {
   var currentPoints: List<Pt> = listOf(start, refStart, refEnd, end)
   while (currentPoints.size > 1) {
@@ -57,14 +69,27 @@ fun BezierSegment.point2(t: Float): Pt {
   return currentPoints.first()
 }
 
+// p0(1-t)^3 + p1*3*(1-t)^2*t + p2*3(1-t)t^2 + p3*t^3
+// производная в точках p0 и p3 совпадают с оригиналом
+
+fun BezierSegment.derivative(t: Float): Pt {
+  //3(B-A), 3(C-B), 3(D-C)
+  return calcBezier2Pt(t, 3 * (p2 - p1), 3 * (p3 - p2), 3 * (p4 - p3))
+}
+
 fun BezierSegment.subSegment(t1:Float, t2:Float):BezierSegment {
-  val p1 = point2(t1)
-  val p2 = point2(t2)
+  val A = point2(t1)
+  val D = point2(t2)
+//  3 * (B - A) = derivative(t1)
+  val B = A + derivative(t1) / 3f
+//  3 * (D - C) = derivative(t2)
+  val C = D - derivative(t2) / 3f
+
   return BezierSegment(
-    start = p1,
-    end = p2,
-    refStart = p1,
-    refEnd = p2
+    start = A,
+    end = D,
+    refStart = B,
+    refEnd = C
   )
 }
 

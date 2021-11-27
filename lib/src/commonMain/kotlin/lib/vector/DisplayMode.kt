@@ -30,8 +30,8 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               points.toLineSegments().forEach { s ->
                 val result = s.bezierSegment(bezierRef[s.start]?.startRef, bezierRef[s.end]?.endRef)
 //                val subSegment = result.subSegment(0.4f, 0.6f)
-//                drawCircle(Color.Red, 4f, subSegment.start.offset)
-//                drawCircle(Color.Green, 4f, subSegment.end.offset)
+//                drawCircle(Color.Red, 4f, subSegment.refStart.offset)
+//                drawCircle(Color.Green, 4f, subSegment.refEnd.offset)
                 with(result) {
                   cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
 //                lineTo(to.x, to.y)
@@ -41,6 +41,23 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             color = Color(color),
             style = if (FILL_PATH) Fill else Stroke(width = 2f)
           )
+
+          drawPath(
+            path = Path().apply {
+              val start = points[0]
+              moveTo(start.x, start.y)
+              points.toLineSegments().forEach { s ->
+                val result = s.bezierSegment(bezierRef[s.start]?.startRef, bezierRef[s.end]?.endRef).subSegment(0.3f, 0.7f)
+                with(result) {
+                  cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
+//                lineTo(to.x, to.y)
+                }
+              }
+            },
+            color = Color.Yellow,
+            style = if (FILL_PATH) Fill else Stroke(width = 2f)
+          )
+
         }
       }
 

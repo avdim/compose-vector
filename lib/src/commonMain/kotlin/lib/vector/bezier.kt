@@ -78,12 +78,27 @@ fun BezierSegment.derivative(t: Float): Pt {
 }
 
 fun BezierSegment.subSegment(t1:Float, t2:Float):BezierSegment {
-  val A = point2(t1)
-  val D = point2(t2)
-//  3 * (B - A) = derivative(t1)
-  val B = A + derivative(t1) / 3f
-//  3 * (D - C) = derivative(t2)
-  val C = D - derivative(t2) / 3f
+  val A = point(t1)
+  val D = point(t2)
+
+  fun tArrCalc(t:Float): List<Float> {
+    val mt = 1 - t
+    return listOf(
+      mt * mt * mt,
+      3 * mt * mt * t,
+      3 * mt * t * t,
+      t * t * t,
+      t1 * mt + t2 * t
+    )
+  }
+  val arr50 = tArrCalc(0.5f)
+  val arr75 = tArrCalc(0.75f)
+//  A * arr50[0] + B * arr50[1] + C * arr50[2] + D * arr50[3] = point(arr50[4])
+//  A * arr75[0] + B * arr75[1] + C * arr75[2] + D * arr75[3] = point(arr75[4])
+  val up = point(arr75[4]) - A * arr75[0] - D * arr75[3] - (point(arr50[4]) - A * arr50[0] - D * arr50[3]) * arr75[1] / arr50[1]
+  val down = (arr75[2] -  arr50[2] * arr75[1] / arr50[1])
+  val C = up / down
+  val B = (point(arr50[4]) - A * arr50[0] - D * arr50[3] - C * arr50[2]) / arr50[1]
 
   return BezierSegment(
     start = A,

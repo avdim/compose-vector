@@ -49,9 +49,27 @@ fun calcBezier3Pt(t: Float, p0: Pt, p1: Pt, p2: Pt, p3: Pt): Pt {
   return p0 * mt3 + 3 * p1 * mt2 * t + 3 * p2 * mt * t2 + p3 * t3
 }
 
+fun BezierSegment.point2(t: Float): Pt {
+  var currentPoints: List<Pt> = listOf(start, refStart, refEnd, end)
+  while (currentPoints.size > 1) {
+    currentPoints = currentPoints.windowed(2).map { (a, b) -> a * (1 - t) + b * t }
+  }
+  return currentPoints.first()
+}
+
+fun BezierSegment.subSegment(t1:Float, t2:Float):BezierSegment {
+  val p1 = point2(t1)
+  val p2 = point2(t2)
+  return BezierSegment(
+    start = p1,
+    end = p2,
+    refStart = p1,
+    refEnd = p2
+  )
+}
+
 fun BezierSegment.split(t: Float): Pair<BezierSegment, BezierSegment> {
   // https://pomax.github.io/bezierinfo/index.html#splitting
-
   val left = mutableListOf<Pt>()
   val right = mutableListOf<Pt>()
 

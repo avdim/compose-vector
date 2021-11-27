@@ -435,11 +435,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             val interceptedPoints = interceptCubicBezier(a, b)
             interceptedPoints.relativePointsA.forEach {
               val interceptedPoint = a.point(it)
-              drawCircle(Color.Black, 3f, center = interceptedPoint.offset)
-            }
-            interceptedPoints.relativePointsB.forEach {
-              val interceptedPoint = b.point(it)
-              drawCircle(Color.Black, 3f, center = interceptedPoint.offset)
+              drawCircle(Color.Red, 5f, center = interceptedPoint.offset)
             }
           }
         }

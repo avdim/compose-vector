@@ -2,7 +2,7 @@ package lib.vector.intercept
 
 import lib.vector.*
 
-data class InterceptedBezierPoint(val relativePointsA: List<Float>, val relativePointsB: List<Float>, val points: List<Pt>)
+data class InterceptedBezierPoint(val relativePointsA: List<Float>, val relativePointsB: List<Float>)
 
 fun InterceptedBezierPoint.mapA(lambda: (Float) -> Float) = copy(
   relativePointsA = relativePointsA.map(lambda)
@@ -16,7 +16,6 @@ operator fun InterceptedBezierPoint.plus(other: InterceptedBezierPoint) =
   InterceptedBezierPoint(
     relativePointsA = relativePointsA + other.relativePointsA,
     relativePointsB = relativePointsB + other.relativePointsB,
-    points = points + other.points
   )
 
 fun interceptCubicBezier(a: BezierSegment, b: BezierSegment): InterceptedBezierPoint {
@@ -34,7 +33,7 @@ fun interceptCubicBezier(
     val tam = (ta1 + ta2) / 2
     val tbm = (tb1 + tb2) / 2
     if (a.subSegment(ta1, ta2).aabb.size.diagonalF < precision) {
-      InterceptedBezierPoint(listOf(tam), listOf(tbm), listOf(a.aabb.topLeft))
+      InterceptedBezierPoint(listOf(tam), listOf(tbm))
     } else {
       interceptCubicBezier(a, b, precision, ta1, tam, tb1, tbm) +
       interceptCubicBezier(a, b, precision, ta1, tam, tbm, tb2) +
@@ -42,7 +41,7 @@ fun interceptCubicBezier(
       interceptCubicBezier(a, b, precision, tam, ta2, tbm, tb2)
     }
   } else {
-    InterceptedBezierPoint(emptyList(), emptyList(), emptyList())
+    InterceptedBezierPoint(emptyList(), emptyList())
   }
 
 infix fun Rect.intercepted(b: Rect): Boolean {

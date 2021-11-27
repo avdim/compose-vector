@@ -41,24 +41,6 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             color = Color(color),
             style = if (FILL_PATH) Fill else Stroke(width = 2f)
           )
-
-          points.toLineSegments().forEach{ s->
-            val result = s.bezierSegment(bezierRef[s.start]?.startRef, bezierRef[s.end]?.endRef).subSegment(0.3f, 0.7f)
-            drawPath(
-              path = Path().apply {
-                val start = result.start
-                moveTo(start.x, start.y)
-                 with(result) {
-                    cubicTo(refStart.x, refStart.y, refEnd.x, refEnd.y, end.x, end.y)
-//                lineTo(to.x, to.y)
-                  }
-              },
-              color = Color.Yellow,
-              style = if (FILL_PATH) Fill else Stroke(width = 2f)
-            )
-
-          }
-
         }
       }
 

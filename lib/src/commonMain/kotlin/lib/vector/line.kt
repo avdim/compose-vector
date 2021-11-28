@@ -9,7 +9,7 @@ fun <T,R> LineSegment<T>.map(lambda:(T)->R) = LineSegment<R>(
   after = lambda(after),
 )
 
-fun <T> List<T>.toLineSegments(): Collection<LineSegment<T>> =
+fun <T> List<T>.toLineSegments(): List<LineSegment<T>> =
   (this.takeOrSmaller(1) + this + this.takeLastOrSmaller(1)).windowed(4).map { (before, start, end, after) ->
     LineSegment(
       before = before, start = start, end = end, after = after

@@ -11,11 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.isShiftPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -26,7 +24,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
 import lib.vector.intercept.interceptCubicBezier
-import lib.vector.intercept.interceptLinear
 import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
 import java.awt.Point
@@ -47,7 +44,7 @@ data class ControllerState(val name: String, val options: DrawOptions)
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
+fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
   // Init
   val generatedMapIdToPoint: MutableMap<Id, Pt> = mutableMapOf()
   val generatedElements: MutableList<Element> = mutableListOf()
@@ -415,29 +412,90 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
     }
     is DrawOptions.InterceptedPoints -> {
+      class InterceptedPoint(val pt: Pt, val curve1: Element.Curve, val t1: Float, val pointIndex1: Int, val curve2: Element.Curve, val t2: Float, val pointIndex2: Int)
+      val interceptedPoints:List<InterceptedPoint> = remember(savedElements) {
+        val elements = savedElements
+        buildList<InterceptedPoint> {
+          class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
+          val allSegments = elements.filterIsInstance<Element.Curve>().flatMap { curve ->
+            curve.points.toLineSegments().mapIndexed { i: Int, it ->
+              CurveSegment(
+                curve = curve,
+                pointIndex = i,
+                bezierSegment = it.map { it.pt(mapIdToPoint) }.bezierSegment(
+                  startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
+                  endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
+                )
+              )
+            }
+          }
+
+          for (i in 0 until allSegments.size) {
+            for (j in i + 1 until allSegments.size) {
+              //todo N^2
+              val a = allSegments[i]
+              val b = allSegments[j]
+              val interceptedPoints = interceptCubicBezier(a.bezierSegment, b.bezierSegment)
+              interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
+                a.bezierSegment.point(ta)
+                b.bezierSegment.point(tb)
+                add(InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex))
+              }
+            }
+          }
+
+        }
+      }
       Canvas(
         modifier.wrapContentSize(Alignment.Center)
           .fillMaxSize()
-      ) {
-        val allSegments = savedElements.filterIsInstance<Element.Curve>().flatMap { curve ->
-          curve.points.toLineSegments().map {
-            it.map { it.pt(mapIdToPoint) }.bezierSegment(
-              startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
-              endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
-            )
-          }
-        }
-        for (i in 0 until allSegments.size) {
-          for (j in i + 1 until allSegments.size) {
-            //todo N^2
-            val a: BezierSegment = allSegments[i]
-            val b: BezierSegment = allSegments[j]
-            val interceptedPoints = interceptCubicBezier(a, b)
-            interceptedPoints.relativePointsA.forEach {
-              val interceptedPoint = a.point(it)
-              drawCircle(Color.Red, 5f, center = interceptedPoint.offset)
+          .pointerInput(savedElements) {
+            while (true) {
+              val event = awaitPointerEventScope { awaitPointerEvent() }
+              if (event.type == PointerEventType.Press) {
+                val point = event.mouseEvent?.point
+                if (point != null) {
+                  val candidate = interceptedPoints.minByOrNull {
+                    point.pt distance (it.pt)
+                  }
+                  if (candidate != null) {
+                    val newId = addPoint(candidate.pt)
+                    savedElements = savedElements.toMutableList().apply {
+                      val i1 = indexOf(candidate.curve1)
+                      val i2 = indexOf(candidate.curve2)
+                      if(i1 == -1 || i2 == -1 ) {
+                        println("i1 == -1 || i2 == -1")
+                      }
+                      set(
+                        i1,
+                        (get(i1) as Element.Curve).copy(
+                          points = (get(i1) as Element.Curve).points.toMutableList().apply {
+                            add(candidate.pointIndex1 + 1, newId)
+                          }
+                        )
+                      )
+                      set(
+                        i2,
+                        (get(i2) as Element.Curve).copy(
+                          points = (get(i2) as Element.Curve).points.toMutableList().apply {
+                            if (candidate.curve1 == candidate.curve2 && candidate.pointIndex2 > candidate.pointIndex1) {
+                              add(candidate.pointIndex2 + 2, newId)
+                            } else {
+                              add(candidate.pointIndex2 + 1, newId)
+                            }
+                          }
+                        )
+                      )
+                    }
+                  }
+
+                }
+              }
             }
           }
+      ) {
+        interceptedPoints.forEach {
+          drawCircle(Color.Red, 5f, center = it.pt.offset)
         }
       }
     }

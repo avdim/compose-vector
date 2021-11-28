@@ -19,7 +19,10 @@ operator fun InterceptedBezierPoint.plus(other: InterceptedBezierPoint) =
   )
 
 fun interceptCubicBezier(a: BezierSegment, b: BezierSegment): InterceptedBezierPoint {
-  val precision = minOf(a.lengthF, b.lengthF) / 1E5f
+  val precision = maxOf(
+    minOf(a.lengthF, b.lengthF) / 1E4f,
+    1E-4f
+  )
   return interceptCubicBezier(a, b, precision, 0f, 1f, 0f, 1f)
 }
 
@@ -27,22 +30,29 @@ fun interceptCubicBezier(
   a: BezierSegment, b: BezierSegment,
   precision: Float,
   ta1: Float, ta2: Float,
-  tb1: Float, tb2: Float
-): InterceptedBezierPoint =
-  if (a.subSegment(ta1, ta2).aabb intercepted b.subSegment(tb1, tb2).aabb) {
+  tb1: Float, tb2: Float,
+  recursion:Int = 0
+): InterceptedBezierPoint {
+  return if (a.subSegment(ta1, ta2).aabb intercepted b.subSegment(tb1, tb2).aabb) {
     val tam = (ta1 + ta2) / 2
     val tbm = (tb1 + tb2) / 2
-    if (a.subSegment(ta1, ta2).aabb.size.diagonalF < precision) {
+    val diagonalF = a.subSegment(ta1, ta2).aabb.size.diagonalF
+    val MAX_RECURSION = 100
+    if (recursion > MAX_RECURSION) {
+      println("recursion > MAX_RECURSION")
+    }
+    if (diagonalF < precision || recursion > MAX_RECURSION) {
       InterceptedBezierPoint(listOf(tam), listOf(tbm))
     } else {
-      interceptCubicBezier(a, b, precision, ta1, tam, tb1, tbm) +
-      interceptCubicBezier(a, b, precision, ta1, tam, tbm, tb2) +
-      interceptCubicBezier(a, b, precision, tam, ta2, tb1, tbm) +
-      interceptCubicBezier(a, b, precision, tam, ta2, tbm, tb2)
+      interceptCubicBezier(a, b, precision, ta1, tam, tb1, tbm, recursion+1) +
+        interceptCubicBezier(a, b, precision, ta1, tam, tbm, tb2, recursion+1) +
+        interceptCubicBezier(a, b, precision, tam, ta2, tb1, tbm, recursion+1) +
+        interceptCubicBezier(a, b, precision, tam, ta2, tbm, tb2, recursion+1)
     }
   } else {
     InterceptedBezierPoint(emptyList(), emptyList())
   }
+}
 
 infix fun Rect.intercepted(b: Rect): Boolean {
   val a = this

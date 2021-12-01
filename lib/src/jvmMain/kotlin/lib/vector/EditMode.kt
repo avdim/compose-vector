@@ -126,7 +126,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
       }) {
       Row {
         Column {
-          TextButton("Clear") {
+          TxtButton("Clear") {
             // todo Are you sure?
             savedElements = emptyList()
             mapIdToPoint = emptyMap()
@@ -160,7 +160,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
               }
             }
             is DrawOptions.Img -> {
-              TextButton("get clipboard image") {
+              TxtButton("get clipboard image") {
                 val img: BufferedImage? = getClipboardImage()
                 if (img != null) {
                   replaceChangeOptions { options.copy(image = img.toComposeImageBitmap()) }
@@ -502,10 +502,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
   }
 
   Row() {
-    TextButton("Edit") {
+    TxtButton("Edit") {
       editPanelIsOpen = !editPanelIsOpen
     }
-    TextButton("Copy result to clipboard") {
+    TxtButton("Copy result to clipboard") {
       val result: String = generateCode(savedElements, mapIdToPoint)
       pasteToClipboard(result)
     }
@@ -527,13 +527,13 @@ val Point.pt get() = Pt(x.toFloat(), y.toFloat())
 @Composable
 fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
   Column {
-    TextButton("Blue") {
+    TxtButton("Blue") {
       onChageColor(Color.Blue.value)
     }
-    TextButton("Red") {
+    TxtButton("Red") {
       onChageColor(Color.Red.value)
     }
-    TextButton("Yellow") {
+    TxtButton("Yellow") {
       onChageColor(Color.Yellow.value)
     }
   }

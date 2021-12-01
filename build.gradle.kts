@@ -12,7 +12,7 @@ buildscript {
   }
 
   dependencies {
-    classpath("org.jetbrains.compose:compose-gradle-plugin:1.0.0-rc4")
+    classpath("org.jetbrains.compose:compose-gradle-plugin:$COMPOSE_VERSION")
     classpath("com.android.tools.build:gradle:4.1.3")
   }
 }

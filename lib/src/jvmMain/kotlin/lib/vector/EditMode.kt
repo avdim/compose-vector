@@ -9,14 +9,12 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.isPrimaryPressed
-import androidx.compose.ui.input.pointer.isShiftPressed
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -250,7 +248,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
 
   fun pointerStart(pt: Pt) {}
   fun pointerMove(pt: Pt) {}
-  fun pointerEnd(pt: Pt?) {
+  fun pointerEnd(pt: Pt) {
     val e = currentElement
     if (e != null) {
       savedElements = savedElements + e
@@ -261,21 +259,19 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
     modifier = modifier.pointerInput(Unit) {
       while (true) {
         val event = awaitPointerEventScope { awaitPointerEvent() }
-        val point = event.mouseEvent?.point
-        if (event.buttons.isPrimaryPressed) {
+        val point = event.awtEvent.point
+        if (event.buttons.areAnyPressed || event.changes.lastOrNull()?.type == PointerType.Touch) {
           val previousPoints: List<Id>? = currentPoints
-          if (point != null) {
-            if (previousPoints == null) {
-              currentPoints = listOf(addPoint(point.pt))
-              pointerStart(point.pt)
-            } else {
-              currentPoints = previousPoints + addPoint(point.pt)
-              pointerMove(point.pt)
-            }
+          if (previousPoints == null) {
+            currentPoints = listOf(addPoint(point.pt))
+            pointerStart(point.pt)
+          } else {
+            currentPoints = previousPoints + addPoint(point.pt)
+            pointerMove(point.pt)
           }
         } else {
           if (currentPoints != null && event.keyboardModifiers.isShiftPressed.not()) {
-            pointerEnd(point?.pt)
+            pointerEnd(point.pt)
             currentPoints = null
 
             //Iterate and remove unused points

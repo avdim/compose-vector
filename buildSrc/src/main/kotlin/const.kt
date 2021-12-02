@@ -1,2 +1,3 @@
 val KOTLIN_VERSION = "1.5.31"
+//val COMPOSE_VERSION = "1.0.0-rc3"
 val COMPOSE_VERSION = "1.0.0"

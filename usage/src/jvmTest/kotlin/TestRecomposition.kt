@@ -10,6 +10,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import lib.vector.TxtButton
+import kotlin.random.Random
 
 fun main() {
   application {
@@ -35,5 +36,5 @@ fun main() {
 fun NotRecomposed(arg1:Int, lambda: () -> Unit) {
   println("recompose NotRecomposed, arg1: $arg1")
   lambda()
-  Text("NotRecomposed")
+  Text("NotRecomposed + ${Random.nextInt()}")
 }

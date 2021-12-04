@@ -2,7 +2,6 @@ package com.usage
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
@@ -13,20 +12,15 @@ import lib.vector.TxtButton
 import kotlin.random.Random
 
 fun main() {
-  application {
-    Window(
-      onCloseRequest = ::exitApplication,
-      state = rememberWindowState(width = 800.dp, height = 800.dp)
-    ) {
-      Column {
-        println("recompose main")
-        var counter by remember { mutableStateOf(0) }
-        NotRecomposed(counter / 5) {
-          println("lambda")
-        }
-        TxtButton("Increment $counter") {
-          counter++
-        }
+  runSimpleComposableWindow {
+    Column {
+      println("recompose main")
+      var counter by remember { mutableStateOf(0) }
+      NotRecomposed(counter / 5) {
+        println("lambda")
+      }
+      TxtButton("Increment $counter") {
+        counter++
       }
     }
   }

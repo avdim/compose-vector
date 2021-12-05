@@ -42,7 +42,7 @@ data class ControllerState(val name: String, val options: DrawOptions)
 
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
+fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   // Init
   val generatedMapIdToPoint: MutableMap<Id, Pt> = mutableMapOf()
   val generatedElements: MutableList<Element> = mutableListOf()
@@ -179,25 +179,27 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
     }
   }
 
-  var currentPoints by remember { mutableStateOf<List<Id>?>(null) }
+  var currentPoints by remember { mutableStateOf<List<Id>>(emptyList()) }
   val currentElement: Element? by derivedStateOf {
     when (controllerState.options) {
       is DrawOptions.Selection -> null
       is DrawOptions.BezierReference -> null
       is DrawOptions.InterceptedPoints -> null
       is DrawOptions.Curve -> {
-        val points: List<Id> = currentPoints.orEmpty()
-        val fullLength = points.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
+        val fullLength = currentPoints.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
         val threshold = fullLength / CURVE_PRECISION
+
         class PointWithNeighbours(var prev: Int, val current: Int, var next: Int) {
-          val currentPoint = points[current].pt(mapIdToPoint)
-          val prevDistance get() = points[prev].pt(mapIdToPoint) distance currentPoint
-          val nextDistance get() = points[next].pt(mapIdToPoint) distance currentPoint
+          val currentPoint = currentPoints[current].pt(mapIdToPoint)
+          val prevDistance get() = currentPoints[prev].pt(mapIdToPoint) distance currentPoint
+          val nextDistance get() = currentPoints[next].pt(mapIdToPoint) distance currentPoint
           val sumDistance get() = prevDistance + nextDistance
         }
-        val temp = points.indices.windowed(3).map { (prev, current, next) ->
+
+        val temp = currentPoints.indices.windowed(3).map { (prev, current, next) ->
           PointWithNeighbours(prev, current, next)
         }.toMutableList()
+
         fun getTempByIndex(index: Int) = temp.firstOrNull { it.current == index }
         temp.sortBy { it.sumDistance }
         while (temp.isNotEmpty() && temp.first().sumDistance < threshold) {
@@ -208,24 +210,24 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
         }
         Element.Curve(
           color = controllerState.options.color,
-          points = points.takeOrSmaller(1) + points.filterIndexed { i, _ -> temp.any { it.current == i } } + points.takeLastOrSmaller(1),
+          points = currentPoints.takeOrSmaller(1) +
+            currentPoints.filterIndexed { i, _ -> temp.any { it.current == i } } +
+            currentPoints.takeLastOrSmaller(1),
           bezierRef = emptyMap()
         )
       }
       is DrawOptions.Rect -> {
-        val points = currentPoints
-        if (points != null && points.size >= 2) {
-          Element.Rectangle(controllerState.options.color, points.first(), points.last())
+        if (currentPoints.size >= 2) {
+          Element.Rectangle(controllerState.options.color, currentPoints.first(), currentPoints.last())
         } else {
           null
         }
       }
       is DrawOptions.Img -> {
         val img = controllerState.options.image
-        val points = currentPoints
-        if (img != null && points != null && points.isNotEmpty()) {
+        if (img != null && currentPoints.isNotEmpty()) {
           Element.Bitmap(
-            points.last(),
+            currentPoints.last(),
             byteArray = img.toByteArray()
           )
         } else {
@@ -250,8 +252,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
         val event = awaitPointerEventScope { awaitPointerEvent() }
         val point = event.awtEvent.point
         if (event.buttons.areAnyPressed || event.changes.lastOrNull()?.type == PointerType.Touch) {
-          val previousPoints: List<Id>? = currentPoints
-          if (previousPoints == null) {
+          val previousPoints: List<Id> = currentPoints
+          if (previousPoints.isEmpty()) {
             currentPoints = listOf(addPoint(point.pt))
             pointerStart(point.pt)
           } else {
@@ -259,9 +261,9 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
             pointerMove(point.pt)
           }
         } else {
-          if (currentPoints != null && event.keyboardModifiers.isShiftPressed.not()) {
+          if (event.keyboardModifiers.isShiftPressed.not()) {
             pointerEnd(point.pt)
-            currentPoints = null
+            currentPoints = emptyList()
 
             //Iterate and remove unused points
             val usedIds = mutableSetOf<Id>()
@@ -395,11 +397,21 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
       }
     }
     is DrawOptions.InterceptedPoints -> {
-      class InterceptedPoint(val pt: Pt, val curve1: Element.Curve, val t1: Float, val pointIndex1: Int, val curve2: Element.Curve, val t2: Float, val pointIndex2: Int)
-      val interceptedPoints:List<InterceptedPoint> = remember(savedElements) {
+      class InterceptedPoint(
+        val pt: Pt,
+        val curve1: Element.Curve,
+        val t1: Float,
+        val pointIndex1: Int,
+        val curve2: Element.Curve,
+        val t2: Float,
+        val pointIndex2: Int
+      )
+
+      val interceptedPoints: List<InterceptedPoint> = remember(savedElements) {
         val elements = savedElements
         buildList<InterceptedPoint> {
           class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
+
           val allSegments = elements.filterIsInstance<Element.Curve>().flatMap { curve ->
             curve.points.toLineSegments().mapIndexed { i: Int, it ->
               CurveSegment(
@@ -446,7 +458,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
                     savedElements = savedElements.toMutableList().apply {
                       val i1 = indexOf(candidate.curve1)
                       val i2 = indexOf(candidate.curve2)
-                      if(i1 == -1 || i2 == -1 ) {
+                      if (i1 == -1 || i2 == -1) {
                         println("i1 == -1 || i2 == -1")
                       }
                       set(

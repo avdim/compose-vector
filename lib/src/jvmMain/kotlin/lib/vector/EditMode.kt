@@ -99,7 +99,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
     )
   }
   var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Curve } ?: 0) }
-  val controllerState: ControllerState by derivedStateOf { controllers.get(selectedControllerIndex) }
+  val controllerState: ControllerState = controllers[selectedControllerIndex]
   fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
       it[selectedControllerIndex] = it[selectedControllerIndex].copy(
@@ -181,34 +181,23 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
 
   var currentPoints by remember { mutableStateOf<List<Id>?>(null) }
   val currentElement: Element? by derivedStateOf {
-    val options = controllerState.options
-    when (options) {
-      is DrawOptions.Selection -> {
-        null
-      }
-      is DrawOptions.BezierReference -> {
-        null
-      }
-      is DrawOptions.InterceptedPoints -> {
-        null
-      }
+    when (controllerState.options) {
+      is DrawOptions.Selection -> null
+      is DrawOptions.BezierReference -> null
+      is DrawOptions.InterceptedPoints -> null
       is DrawOptions.Curve -> {
-
         val points: List<Id> = currentPoints.orEmpty()
         val fullLength = points.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
         val threshold = fullLength / CURVE_PRECISION
-
         class PointWithNeighbours(var prev: Int, val current: Int, var next: Int) {
           val currentPoint = points[current].pt(mapIdToPoint)
           val prevDistance get() = points[prev].pt(mapIdToPoint) distance currentPoint
           val nextDistance get() = points[next].pt(mapIdToPoint) distance currentPoint
           val sumDistance get() = prevDistance + nextDistance
         }
-
         val temp = points.indices.windowed(3).map { (prev, current, next) ->
           PointWithNeighbours(prev, current, next)
         }.toMutableList()
-
         fun getTempByIndex(index: Int) = temp.firstOrNull { it.current == index }
         temp.sortBy { it.sumDistance }
         while (temp.isNotEmpty() && temp.first().sumDistance < threshold) {
@@ -218,22 +207,22 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
           temp.sortBy { it.sumDistance }
         }
         Element.Curve(
-          options.color,
+          color = controllerState.options.color,
           points = points.takeOrSmaller(1) + points.filterIndexed { i, _ -> temp.any { it.current == i } } + points.takeLastOrSmaller(1),
-          emptyMap())
+          bezierRef = emptyMap()
+        )
       }
       is DrawOptions.Rect -> {
         val points = currentPoints
         if (points != null && points.size >= 2) {
-          Element.Rectangle(options.color, points.first(), points.last())
+          Element.Rectangle(controllerState.options.color, points.first(), points.last())
         } else {
           null
         }
       }
       is DrawOptions.Img -> {
-        val img = options.image
+        val img = controllerState.options.image
         val points = currentPoints
-
         if (img != null && points != null && points.isNotEmpty()) {
           Element.Bitmap(
             points.last(),
@@ -337,15 +326,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit ) {
       class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean) : Pt
 
       val bezierPoints: List<BezierPt> by derivedStateOf {
-        val elements = savedElements
-        val map = mapIdToPoint
         buildList {
-          elements.filterIsInstance<Element.Curve>().forEach { curve ->
+          savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
             val points = curve.points
             points.toLineSegments().forEach { s ->
               val idStart = curve.bezierRef[s.start]?.startRef
               val idEnd = curve.bezierRef[s.end]?.endRef
-              val result = s.map { it.pt(map) }.bezierSegment(startRef = idStart?.pt(map), idEnd?.pt(map))
+              val result = s.map { it.pt(mapIdToPoint) }.bezierSegment(startRef = idStart?.pt(mapIdToPoint), idEnd?.pt(mapIdToPoint))
               add(
                 BezierPt(result.refStart.x, result.refStart.y, idStart, curve, s.start, true)
               )

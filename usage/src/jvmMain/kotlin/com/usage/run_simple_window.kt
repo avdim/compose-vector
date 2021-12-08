@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 
-fun runSimpleComposableWindow(content: @Composable ()->Unit) {
+fun runSimpleComposableWindow(content: @Composable ()->Unit):Unit {
   application {
     Window(
       onCloseRequest = ::exitApplication,

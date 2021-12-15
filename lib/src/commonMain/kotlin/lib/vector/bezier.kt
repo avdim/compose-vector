@@ -21,14 +21,28 @@ fun LineSegment<Pt>.bezierSegment(startRef: Pt?, endRef: Pt?): BezierSegment {
 private class InTriangleResult(val refFrom: Pt, val refTo: Pt)
 
 private fun calcDefaultBezierInTriangle(a: Pt, b: Pt, c: Pt): InTriangleResult {
-  val ab = a.distance(b).toFloat()
-  val bc = b.distance(c).toFloat()
-  val scaleA = ab / (ab + bc + 0.001f)
-  val scaleC = bc / (ab + bc + 0.001f)
+  val ab = a.distance(b)
+  val bc = b.distance(c)
+  val scaleA = ab / (ab + bc + 0.001)
+  val scaleC = bc / (ab + bc + 0.001)
   val direction = (c - a)
+
+  val refFrom =
+    if (scaleA == 0.0) {
+      b + direction * scaleC * (DEFAULT_BEZIER_SCALE / 3)
+    } else {
+      b + direction * scaleA * DEFAULT_BEZIER_SCALE
+    }
+
+  val refTo =
+    if (scaleC == 0.0) {
+      b - direction * scaleA * (DEFAULT_BEZIER_SCALE / 3)
+    } else {
+      b - direction * scaleC * DEFAULT_BEZIER_SCALE
+    }
   return InTriangleResult(
-    refFrom = b + direction * scaleA * DEFAULT_BEZIER_SCALE,
-    refTo = b - direction * scaleC * DEFAULT_BEZIER_SCALE,
+    refFrom = refFrom,
+    refTo = refTo,
   )
 }
 

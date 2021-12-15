@@ -55,6 +55,6 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
 //  return file.toString()
 }
 
-private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String = if (name != null) name else pt(map).run { "Pt($x, $y)" }
+private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String = if (name != null) name else pt(map).run { "Pt(${x.toInt()}, ${y.toInt()})" }
 
 private val ULong.literalStr: String get() = "0x" + toString(radix = 16) + "uL"

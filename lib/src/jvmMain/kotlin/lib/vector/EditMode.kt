@@ -29,6 +29,7 @@ import java.awt.Point
 import java.awt.image.BufferedImage
 
 const val CURVE_PRECISION = 25f
+const val CLOSE_DISTANCE = 5.0
 
 sealed class DrawOptions {
   class Edit: DrawOptions()
@@ -261,7 +262,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   if (controllerState.options is DrawOptions.Edit) {
     //Selection
     var currentMousePoint: Pt by remember { mutableStateOf(Pt(0,0)) }
-    class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean) : Pt//todo наследование от Pt
+    class BezierPt(val pt: Pt, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean)
     val bezierPoints: List<BezierPt> by derivedStateOf {
       buildList {
         savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
@@ -271,10 +272,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             val idEnd = curve.bezierRef[s.end]?.endRef
             val result = s.map { it.pt(mapIdToPoint) }.bezierSegment(startRef = idStart?.pt(mapIdToPoint), idEnd?.pt(mapIdToPoint))
             add(
-              BezierPt(result.refStart.x, result.refStart.y, idStart, curve, s.start, true)
+              BezierPt(result.refStart, idStart, curve, s.start, true)
             )
             add(
-              BezierPt(result.refEnd.x, result.refEnd.y, idEnd, curve, s.end, false)
+              BezierPt(result.refEnd, idEnd, curve, s.end, false)
             )
           }
         }
@@ -318,7 +319,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
               a.bezierSegment.point(ta)
               b.bezierSegment.point(tb)
-              add(InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex))
+              val result = InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex)
+              if (mapIdToPoint.values.none { result.pt distance it < CLOSE_DISTANCE }) {
+                add(result)
+              }
             }
           }
         }
@@ -350,10 +354,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 }
 
                 val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
-                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt)
+                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.pt)
                 }
                 if (nearestBezierRef != null) {
-                    regCandidate(mousePt distance nearestBezierRef) {
+                    regCandidate(mousePt distance nearestBezierRef.pt) {
                       // create new pt
                       val id = nearestBezierRef.id
                       if (id == null) {
@@ -421,7 +425,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 }
                 val nearestNew = findNearestNewPoint(mousePt, allSegments)
                 if (nearestNew != null) {
-                  regCandidate((mousePt distance nearestNew.pt) + 5.0) {//todo отдаваит предпочтение существующим точкам
+                  regCandidate((mousePt distance nearestNew.pt) + CLOSE_DISTANCE) {//todo отдаваит предпочтение существующим точкам
                     val newId = addPoint(nearestNew.pt)
                     savedElements = savedElements.toMutableList().apply {
                       val i1 = indexOf(nearestNew.curve1)
@@ -452,7 +456,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
       bezierPoints.forEach {
         //todo line
-        drawCircle(Color.Black, 3f, center = it.offset)
+        drawCircle(Color.Black, 3f, center = it.pt.offset)
       }
       interceptedPoints.forEach {
         drawCircle(Color.Yellow, 5f, center = it.pt.offset)

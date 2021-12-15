@@ -240,9 +240,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   fun pointerStart(pt: Pt) {}
   fun pointerMove(pt: Pt) {}
   fun pointerEnd(pt: Pt) {
-    val e = currentElement
-    if (e != null) {
-      savedElements = savedElements + e
+    if (currentPoints.isNotEmpty()) {
+      val e = currentElement
+      if (e != null) {
+        savedElements = savedElements + e
+      }
     }
   }
 

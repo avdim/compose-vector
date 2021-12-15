@@ -14,7 +14,7 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
         val name = it.key.name
         if (name != null) {
           addStatement(buildString {
-            append("val $name by mkPt(${it.value.x}, ${it.value.y})")
+            append("val $name by mkPt(${it.value.x.toInt()}, ${it.value.y.toInt()})")
           })
         }
       }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.input.pointer.*
@@ -262,7 +263,6 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   if (controllerState.options is DrawOptions.Edit) {
     //Selection
     var currentMousePoint: Pt by remember { mutableStateOf(Pt(0,0)) }
-    class BezierPt(val pt: Pt, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean)
     val bezierPoints: List<BezierPt> by derivedStateOf {
       buildList {
         savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
@@ -354,10 +354,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 }
 
                 val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
-                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.pt)
+                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.refPt)
                 }
                 if (nearestBezierRef != null) {
-                    regCandidate(mousePt distance nearestBezierRef.pt) {
+                    regCandidate(mousePt distance nearestBezierRef.refPt) {
                       // create new pt
                       val id = nearestBezierRef.id
                       if (id == null) {
@@ -455,8 +455,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         drawCircle(Color.Red, 5f, center = it.offset)
       }
       bezierPoints.forEach {
-        //todo line
-        drawCircle(Color.Black, 3f, center = it.pt.offset)
+        drawLine(Color.Black, start = it.originPt(mapIdToPoint).offset, end = it.refPt.offset, pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f)))
+        drawCircle(Color.Black, 3f, center = it.refPt.offset)
       }
       interceptedPoints.forEach {
         drawCircle(Color.Yellow, 5f, center = it.pt.offset)
@@ -528,3 +528,5 @@ class NearestPointOnCurve(
   val pointIndex: Int,
 )
 class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
+class BezierPt(val refPt: Pt, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean)
+fun BezierPt.originPt(mapIdToPoint: Map<Id, Pt>): Pt = mapIdToPoint[key]!!

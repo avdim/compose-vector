@@ -22,6 +22,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
 import lib.vector.intercept.interceptCubicBezier
+import lib.vector.intercept.nearestBezierPoint
 import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
 import java.awt.Point
@@ -33,6 +34,7 @@ sealed class DrawOptions {
   class Selection : DrawOptions()
   class BezierReference : DrawOptions()
   class InterceptedPoints : DrawOptions()
+  class NewPointOnCurve: DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -54,6 +56,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         ControllerState("Selection", DrawOptions.Selection()),
         ControllerState("BezierReference", DrawOptions.BezierReference()),
         ControllerState("InterceptedPoints", DrawOptions.InterceptedPoints()),
+        ControllerState("NewPointOnCurve", DrawOptions.NewPointOnCurve()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
@@ -147,6 +150,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       is DrawOptions.Selection -> null
       is DrawOptions.BezierReference -> null
       is DrawOptions.InterceptedPoints -> null
+      is DrawOptions.NewPointOnCurve -> null
       is DrawOptions.Curve -> {
         val fullLength = currentPoints.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
         val threshold = fullLength / CURVE_PRECISION
@@ -456,6 +460,75 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         interceptedPoints.forEach {
           drawCircle(Color.Red, 5f, center = it.pt.offset)
         }
+      }
+    }
+    is DrawOptions.NewPointOnCurve -> {
+      class NearestPoint(
+        val pt: Pt,
+        val curve1: Element.Curve,
+        val t: Float,
+        val pointIndex: Int,
+      )
+      Canvas(
+        modifier.wrapContentSize(Alignment.Center)
+          .fillMaxSize()
+          .pointerInput(savedElements) {
+            while (true) {
+              val event = awaitPointerEventScope { awaitPointerEvent() }
+              if (event.type == PointerEventType.Press) {
+                val point = event.mouseEvent?.point
+                if (point != null) {
+                  class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
+                  val elements = savedElements
+                  val allSegments: List<CurveSegment> = elements.filterIsInstance<Element.Curve>().flatMap { curve ->
+                    curve.points.toLineSegments().mapIndexed { i: Int, it ->
+                      CurveSegment(
+                        curve = curve,
+                        pointIndex = i,
+                        bezierSegment = it.map { it.pt(mapIdToPoint) }.bezierSegment(
+                          startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
+                          endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
+                        )
+                      )
+                    }
+                  }
+                  val candidate = allSegments.mapIndexed { i, segment ->
+                    val nearestT = nearestBezierPoint(segment.bezierSegment, Pt(point.x, point.y))
+                    NearestPoint(
+                      pt = segment.bezierSegment.point(nearestT),
+                      curve1 = segment.curve,
+                      t = nearestT,
+                      pointIndex = i
+                    )
+                    //todo взять ближайшую
+                  }.minByOrNull {
+                    point.pt distance (it.pt)
+                  }
+                  if (candidate != null) {
+                    val newId = addPoint(candidate.pt)
+                    savedElements = savedElements.toMutableList().apply {
+                      val i1 = indexOf(candidate.curve1)
+                      if (i1 == -1) {
+                        println("i1 == -1")
+                      }
+                      set(
+                        i1,
+                        (get(i1) as Element.Curve).copy(
+                          points = (get(i1) as Element.Curve).points.toMutableList().apply {
+                            add(candidate.pointIndex + 1, newId)
+                          }
+                        )
+                      )
+                    }
+                  }
+
+                }
+              }
+            }
+          }
+      ) {
+        //todo тут надо рисковать candidatePoint
+        //drawCircle(Color.Red, 5f, center = it.pt.offset)
       }
     }
   }

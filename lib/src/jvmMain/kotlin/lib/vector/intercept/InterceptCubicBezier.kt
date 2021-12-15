@@ -26,6 +26,15 @@ fun interceptCubicBezier(a: BezierSegment, b: BezierSegment): InterceptedBezierP
   return interceptCubicBezier(a, b, precision, 0f, 1f, 0f, 1f)
 }
 
+fun nearestBezierPoint(segment: BezierSegment, pt:Pt): Float {
+  return 0.5f
+//  val precision = maxOf(
+//    minOf(a.lengthF, b.lengthF) / 1E4f,
+//    1E-4f
+//  )
+//  return interceptCubicBezier(a, b, precision, 0f, 1f, 0f, 1f)
+}
+
 fun interceptCubicBezier(
   a: BezierSegment, b: BezierSegment,
   precision: Float,

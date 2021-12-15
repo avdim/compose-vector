@@ -31,10 +31,7 @@ import java.awt.image.BufferedImage
 const val CURVE_PRECISION = 25f
 
 sealed class DrawOptions {
-  class Selection : DrawOptions()
-  class BezierReference : DrawOptions()
-  class InterceptedPoints : DrawOptions()
-  class NewPointOnCurve: DrawOptions()
+  class Edit: DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -53,10 +50,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   var controllers by remember {
     mutableStateOf(
       listOf(
-        ControllerState("Selection", DrawOptions.Selection()),
-        ControllerState("BezierReference", DrawOptions.BezierReference()),
-        ControllerState("InterceptedPoints", DrawOptions.InterceptedPoints()),
-        ControllerState("NewPointOnCurve", DrawOptions.NewPointOnCurve()),
+        ControllerState("Edit", DrawOptions.Edit()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
@@ -147,10 +141,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   var currentPoints by remember { mutableStateOf<List<Id>>(emptyList()) }
   val currentElement: Element? by derivedStateOf {
     when (controllerState.options) {
-      is DrawOptions.Selection -> null
-      is DrawOptions.BezierReference -> null
-      is DrawOptions.InterceptedPoints -> null
-      is DrawOptions.NewPointOnCurve -> null
+      is DrawOptions.Edit -> null
       is DrawOptions.Curve -> {
         val fullLength = currentPoints.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
         val threshold = fullLength / CURVE_PRECISION
@@ -267,165 +258,141 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  when (controllerState.options) {
-    is DrawOptions.Selection -> {
-      Canvas(
-        modifier.wrapContentSize(Alignment.Center)
-          .fillMaxSize()
-          .pointerInput(Unit) {
-            while (true) {
-              val event = awaitPointerEventScope { awaitPointerEvent() }
-              val point = event.mouseEvent?.point
-              if (event.buttons.isPrimaryPressed && point != null) {
-                val candidate = mapIdToPoint.minByOrNull { point.pt distance it.value }
-                if (candidate != null) {
-                  mapIdToPoint = mapIdToPoint.toMutableMap().apply {
-                    set(candidate.key, point.pt)
-                  }
-                }
-              }
-            }
+  if (controllerState.options is DrawOptions.Edit) {
+    //Selection
+    var currentMousePoint: Pt by remember { mutableStateOf(Pt(0,0)) }
+    class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean) : Pt//todo наследование от Pt
+    val bezierPoints: List<BezierPt> by derivedStateOf {
+      buildList {
+        savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
+          val points = curve.points
+          points.toLineSegments().forEach { s ->
+            val idStart = curve.bezierRef[s.start]?.startRef
+            val idEnd = curve.bezierRef[s.end]?.endRef
+            val result = s.map { it.pt(mapIdToPoint) }.bezierSegment(startRef = idStart?.pt(mapIdToPoint), idEnd?.pt(mapIdToPoint))
+            add(
+              BezierPt(result.refStart.x, result.refStart.y, idStart, curve, s.start, true)
+            )
+            add(
+              BezierPt(result.refEnd.x, result.refEnd.y, idEnd, curve, s.end, false)
+            )
           }
-      ) {
-        mapIdToPoint.values.forEach {
-          drawCircle(Color.Red, 5f, center = it.offset)
         }
       }
     }
-    is DrawOptions.BezierReference -> {
-      class BezierPt(override val x: Float, override val y: Float, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean) : Pt
 
-      val bezierPoints: List<BezierPt> by derivedStateOf {
-        buildList {
-          savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
-            val points = curve.points
-            points.toLineSegments().forEach { s ->
-              val idStart = curve.bezierRef[s.start]?.startRef
-              val idEnd = curve.bezierRef[s.end]?.endRef
-              val result = s.map { it.pt(mapIdToPoint) }.bezierSegment(startRef = idStart?.pt(mapIdToPoint), idEnd?.pt(mapIdToPoint))
-              add(
-                BezierPt(result.refStart.x, result.refStart.y, idStart, curve, s.start, true)
-              )
-              add(
-                BezierPt(result.refEnd.x, result.refEnd.y, idEnd, curve, s.end, false)
-              )
+    class InterceptedPoint(
+      val pt: Pt,
+      val curve1: Element.Curve,
+      val t1: Float,
+      val pointIndex1: Int,
+      val curve2: Element.Curve,
+      val t2: Float,
+      val pointIndex2: Int
+    )
+
+    val allSegments by derivedStateOf {
+      val elements = savedElements
+      elements.filterIsInstance<Element.Curve>().flatMap { curve ->
+        curve.points.toLineSegments().mapIndexed { i: Int, it ->
+          CurveSegment(
+            curve = curve,
+            pointIndex = i,
+            bezierSegment = it.map { it.pt(mapIdToPoint) }.bezierSegment(
+              startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
+              endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
+            )
+          )
+        }
+      }
+    }
+
+    val interceptedPoints: List<InterceptedPoint> by derivedStateOf {
+      buildList<InterceptedPoint> {
+        for (i in 0 until allSegments.size) {
+          for (j in i + 1 until allSegments.size) {
+            //todo N^2
+            val a = allSegments[i]
+            val b = allSegments[j]
+            val interceptedPoints = interceptCubicBezier(a.bezierSegment, b.bezierSegment)
+            interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
+              a.bezierSegment.point(ta)
+              b.bezierSegment.point(tb)
+              add(InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex))
             }
           }
         }
-      }
-      Canvas(
-        modifier.wrapContentSize(Alignment.Center)
-          .fillMaxSize()
-          .pointerInput(Unit) {
-            while (true) {
-              val event = awaitPointerEventScope { awaitPointerEvent() }
-              val point = event.mouseEvent?.point
-              if (event.buttons.isPrimaryPressed && point != null) {
 
-                val candidate = bezierPoints.minByOrNull { bezierPt ->
+      }
+    }
+
+    Canvas(
+      modifier.wrapContentSize(Alignment.Center)
+        .fillMaxSize()
+        .pointerInput(Unit) {
+          while (true) {
+            val event = awaitPointerEventScope { awaitPointerEvent() }
+            val point = event.mouseEvent?.point
+            if (point != null) {
+              val mousePt = Pt(point.x, point.y)
+              if(event.buttons.isPrimaryPressed) {
+                val actions: MutableMap<Double, () -> Unit> = mutableMapOf()
+                fun regCandidate(distance:Double, action: () -> Unit) {
+                  actions[distance] = action
+                }
+                val nearestCurevePoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
+                if (nearestCurevePoint != null) {
+                  regCandidate(mousePt distance nearestCurevePoint.value) {
+                    mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                      set(nearestCurevePoint.key, point.pt)
+                    }
+                  }
+                }
+
+                val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
                   point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt)
                 }
-                if (candidate != null) {
-                  // create new pt
-                  val id = candidate.id
-                  if (id == null) {
-                    val newId = addPoint(point.pt)
-                    savedElements = savedElements.toMutableList().apply {
-                      val index = indexOf(candidate.curve)
-                      if (index >= 0) {
-                        set(
-                          index,
-                          candidate.curve.copy(
-                            bezierRef = candidate.curve.bezierRef.toMutableMap().apply {
-                              val previous = (get(candidate.key) ?: BezierRefEdit(null, null))
-                              if (candidate.isRefA) {
-                                set(candidate.key, previous.copy(startRef = newId))
-                              } else {
-                                set(candidate.key, previous.copy(endRef = newId))
-                              }
-                            }
-                          )
-                        )
+                if (nearestBezierRef != null) {
+                    regCandidate(mousePt distance nearestBezierRef) {
+                      // create new pt
+                      val id = nearestBezierRef.id
+                      if (id == null) {
+                        val newId = addPoint(point.pt)
+                        savedElements = savedElements.toMutableList().apply {
+                          val index = indexOf(nearestBezierRef.curve)
+                          if (index >= 0) {
+                            set(
+                              index,
+                              nearestBezierRef.curve.copy(
+                                bezierRef = nearestBezierRef.curve.bezierRef.toMutableMap().apply {
+                                  val previous = (get(nearestBezierRef.key) ?: BezierRefEdit(null, null))
+                                  if (nearestBezierRef.isRefA) {
+                                    set(nearestBezierRef.key, previous.copy(startRef = newId))
+                                  } else {
+                                    set(nearestBezierRef.key, previous.copy(endRef = newId))
+                                  }
+                                }
+                              )
+                            )
+                          }
+                        }
+                      } else {
+                        mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                          set(id, point.pt)
+                        }
                       }
                     }
-                  } else {
-                    mapIdToPoint = mapIdToPoint.toMutableMap().apply {
-                      set(id, point.pt)
-                    }
-                  }
-
                 }
-              }
-            }
-          }
-      ) {
-        bezierPoints.forEach {
-          drawCircle(Color.Red, 5f, center = it.offset)
-        }
-      }
-    }
-    is DrawOptions.InterceptedPoints -> {
-      class InterceptedPoint(
-        val pt: Pt,
-        val curve1: Element.Curve,
-        val t1: Float,
-        val pointIndex1: Int,
-        val curve2: Element.Curve,
-        val t2: Float,
-        val pointIndex2: Int
-      )
 
-      val interceptedPoints: List<InterceptedPoint> = remember(savedElements) {
-        val elements = savedElements
-        buildList<InterceptedPoint> {
-          class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
-
-          val allSegments = elements.filterIsInstance<Element.Curve>().flatMap { curve ->
-            curve.points.toLineSegments().mapIndexed { i: Int, it ->
-              CurveSegment(
-                curve = curve,
-                pointIndex = i,
-                bezierSegment = it.map { it.pt(mapIdToPoint) }.bezierSegment(
-                  startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
-                  endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
-                )
-              )
-            }
-          }
-
-          for (i in 0 until allSegments.size) {
-            for (j in i + 1 until allSegments.size) {
-              //todo N^2
-              val a = allSegments[i]
-              val b = allSegments[j]
-              val interceptedPoints = interceptCubicBezier(a.bezierSegment, b.bezierSegment)
-              interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
-                a.bezierSegment.point(ta)
-                b.bezierSegment.point(tb)
-                add(InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex))
-              }
-            }
-          }
-
-        }
-      }
-      Canvas(
-        modifier.wrapContentSize(Alignment.Center)
-          .fillMaxSize()
-          .pointerInput(savedElements) {
-            while (true) {
-              val event = awaitPointerEventScope { awaitPointerEvent() }
-              if (event.type == PointerEventType.Press) {
-                val point = event.mouseEvent?.point
-                if (point != null) {
-                  val candidate = interceptedPoints.minByOrNull {
-                    point.pt distance (it.pt)
-                  }
-                  if (candidate != null) {
-                    val newId = addPoint(candidate.pt)
+                val nearestIntercepted = interceptedPoints.minByOrNull {
+                  point.pt distance (it.pt)
+                }
+                if (nearestIntercepted != null) {
+                  regCandidate(mousePt distance nearestIntercepted.pt) {
+                    val newId = addPoint(nearestIntercepted.pt)
                     savedElements = savedElements.toMutableList().apply {
-                      val i1 = indexOf(candidate.curve1)
-                      val i2 = indexOf(candidate.curve2)
+                      val i1 = indexOf(nearestIntercepted.curve1)
+                      val i2 = indexOf(nearestIntercepted.curve2)
                       if (i1 == -1 || i2 == -1) {
                         println("i1 == -1 || i2 == -1")
                       }
@@ -433,7 +400,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                         i1,
                         (get(i1) as Element.Curve).copy(
                           points = (get(i1) as Element.Curve).points.toMutableList().apply {
-                            add(candidate.pointIndex1 + 1, newId)
+                            add(nearestIntercepted.pointIndex1 + 1, newId)
                           }
                         )
                       )
@@ -441,70 +408,23 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                         i2,
                         (get(i2) as Element.Curve).copy(
                           points = (get(i2) as Element.Curve).points.toMutableList().apply {
-                            if (candidate.curve1 == candidate.curve2 && candidate.pointIndex2 > candidate.pointIndex1) {
-                              add(candidate.pointIndex2 + 2, newId)
+                            if (nearestIntercepted.curve1 == nearestIntercepted.curve2 && nearestIntercepted.pointIndex2 > nearestIntercepted.pointIndex1) {
+                              add(nearestIntercepted.pointIndex2 + 2, newId)
                             } else {
-                              add(candidate.pointIndex2 + 1, newId)
+                              add(nearestIntercepted.pointIndex2 + 1, newId)
                             }
                           }
                         )
                       )
                     }
                   }
-
                 }
-              }
-            }
-          }
-      ) {
-        interceptedPoints.forEach {
-          drawCircle(Color.Red, 5f, center = it.pt.offset)
-        }
-      }
-    }
-    is DrawOptions.NewPointOnCurve -> {
-      class NearestPoint(
-        val pt: Pt,
-        val curve1: Element.Curve,
-        val pointIndex: Int,
-      )
-      Canvas(
-        modifier.wrapContentSize(Alignment.Center)
-          .fillMaxSize()
-          .pointerInput(savedElements) {
-            while (true) {
-              val event = awaitPointerEventScope { awaitPointerEvent() }
-              if (event.type == PointerEventType.Press) {
-                val point = event.mouseEvent?.point
-                if (point != null) {
-                  class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
-                  val elements = savedElements
-                  val allSegments: List<CurveSegment> = elements.filterIsInstance<Element.Curve>().flatMap { curve ->
-                    curve.points.toLineSegments().mapIndexed { i: Int, it ->
-                      CurveSegment(
-                        curve = curve,
-                        pointIndex = i,
-                        bezierSegment = it.map { it.pt(mapIdToPoint) }.bezierSegment(
-                          startRef = curve.bezierRef[it.start]?.startRef?.pt(mapIdToPoint),
-                          endRef = curve.bezierRef[it.end]?.endRef?.pt(mapIdToPoint),
-                        )
-                      )
-                    }
-                  }
-                  val candidate = allSegments.mapIndexed { i, segment ->
-                    val nearestT = nearestBezierPoint(segment.bezierSegment, Pt(point.x, point.y))
-                    NearestPoint(
-                      pt = segment.bezierSegment.point(nearestT),
-                      curve1 = segment.curve,
-                      pointIndex = i
-                    )
-                  }.minByOrNull {
-                    point.pt distance (it.pt)
-                  }
-                  if (candidate != null) {
-                    val newId = addPoint(candidate.pt)
+                val nearestNew = findNearestNewPoint(mousePt, allSegments)
+                if (nearestNew != null) {
+                  regCandidate((mousePt distance nearestNew.pt) + 5.0) {//todo отдаваит предпочтение существующим точкам
+                    val newId = addPoint(nearestNew.pt)
                     savedElements = savedElements.toMutableList().apply {
-                      val i1 = indexOf(candidate.curve1)
+                      val i1 = indexOf(nearestNew.curve1)
                       if (i1 == -1) {
                         println("i1 == -1")
                       }
@@ -512,20 +432,33 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                         i1,
                         (get(i1) as Element.Curve).copy(
                           points = (get(i1) as Element.Curve).points.toMutableList().apply {
-                            add(candidate.pointIndex + 1, newId)
+                            add(nearestNew.pointIndex + 1, newId)
                           }
                         )
                       )
                     }
                   }
-
                 }
+                actions.minByOrNull { it.key }?.value?.invoke()
+              } else {// mouse over
+                currentMousePoint = mousePt
               }
             }
           }
-      ) {
-        //todo тут надо рисковать candidatePoint
-        //drawCircle(Color.Red, 5f, center = it.pt.offset)
+        }
+    ) {
+      mapIdToPoint.values.forEach {
+        drawCircle(Color.Red, 5f, center = it.offset)
+      }
+      bezierPoints.forEach {
+        //todo line
+        drawCircle(Color.Black, 3f, center = it.offset)
+      }
+      interceptedPoints.forEach {
+        drawCircle(Color.Yellow, 5f, center = it.pt.offset)
+      }
+      findNearestNewPoint(currentMousePoint, allSegments)?.let {
+        drawCircle(Color.Green, 3f, center = it.pt.offset)
       }
     }
   }
@@ -571,3 +504,23 @@ fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
 inline fun Id.pt(map: Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map: Map<Id, Pt>): List<Pt> = map { it.pt(map) }
 inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BezierRef(startRef = startRef?.pt(map), endRef = endRef?.pt(map))
+
+inline fun findNearestNewPoint(mouse: Pt, allSegments1: List<CurveSegment>): NearestPointOnCurve? {
+  return allSegments1.mapIndexed { i, segment ->
+    val nearestT = nearestBezierPoint(segment.bezierSegment, mouse)
+    NearestPointOnCurve(
+      pt = segment.bezierSegment.point(nearestT),
+      curve1 = segment.curve,
+      pointIndex = i
+    )
+  }.minByOrNull {
+    mouse distance (it.pt)
+  }
+}
+
+class NearestPointOnCurve(
+  val pt: Pt,
+  val curve1: Element.Curve,
+  val pointIndex: Int,
+)
+class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)

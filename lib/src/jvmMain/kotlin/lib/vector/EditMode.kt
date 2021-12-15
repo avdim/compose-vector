@@ -466,7 +466,6 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       class NearestPoint(
         val pt: Pt,
         val curve1: Element.Curve,
-        val t: Float,
         val pointIndex: Int,
       )
       Canvas(
@@ -497,10 +496,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                     NearestPoint(
                       pt = segment.bezierSegment.point(nearestT),
                       curve1 = segment.curve,
-                      t = nearestT,
                       pointIndex = i
                     )
-                    //todo взять ближайшую
                   }.minByOrNull {
                     point.pt distance (it.pt)
                   }

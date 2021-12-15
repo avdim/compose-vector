@@ -262,6 +262,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
   if (controllerState.options is DrawOptions.Edit) {
     //Selection
+    var currentSelectedId: Id? by remember { mutableStateOf(null) }
     var currentMousePoint: Pt by remember { mutableStateOf(Pt(0,0)) }
     val bezierPoints: List<BezierPt> by derivedStateOf {
       buildList {
@@ -338,25 +339,28 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             val event = awaitPointerEventScope { awaitPointerEvent() }
             val point = event.mouseEvent?.point
             if (point != null) {
-              val mousePt = Pt(point.x, point.y)
+              val mousePt = point.pt
               if(event.buttons.isPrimaryPressed) {
-                val actions: MutableMap<Double, () -> Unit> = mutableMapOf()
-                fun regCandidate(distance:Double, action: () -> Unit) {
-                  actions[distance] = action
-                }
-                val nearestCurevePoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
-                if (nearestCurevePoint != null) {
-                  regCandidate(mousePt distance nearestCurevePoint.value) {
-                    mapIdToPoint = mapIdToPoint.toMutableMap().apply {
-                      set(nearestCurevePoint.key, point.pt)
+                if (currentSelectedId != null) {
+                  mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                    set(currentSelectedId!!, mousePt)
+                  }
+                } else {
+                  val actions: MutableMap<Double, () -> Unit> = mutableMapOf()
+                  fun regCandidate(distance:Double, action: () -> Unit) {
+                    actions[distance] = action
+                  }
+                  val nearestCurvePoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
+                  if (nearestCurvePoint != null) {
+                    regCandidate(mousePt distance nearestCurvePoint.value) {
+                      currentSelectedId = nearestCurvePoint.key
                     }
                   }
-                }
 
-                val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
-                  point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.refPt)
-                }
-                if (nearestBezierRef != null) {
+                  val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
+                    point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.refPt)
+                  }
+                  if (nearestBezierRef != null) {
                     regCandidate(mousePt distance nearestBezierRef.refPt) {
                       // create new pt
                       val id = nearestBezierRef.id
@@ -380,72 +384,74 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                             )
                           }
                         }
+                        currentSelectedId = newId
                       } else {
-                        mapIdToPoint = mapIdToPoint.toMutableMap().apply {
-                          set(id, point.pt)
+                        currentSelectedId = id
+                      }
+                    }
+                  }
+                  val nearestIntercepted = interceptedPoints.minByOrNull {
+                    point.pt distance (it.pt)
+                  }
+                  if (nearestIntercepted != null) {
+                    regCandidate(mousePt distance nearestIntercepted.pt) {
+                      val newId = addPoint(nearestIntercepted.pt)
+                      savedElements = savedElements.toMutableList().apply {
+                        val i1 = indexOf(nearestIntercepted.curve1)
+                        val i2 = indexOf(nearestIntercepted.curve2)
+                        if (i1 == -1 || i2 == -1) {
+                          println("i1 == -1 || i2 == -1")
                         }
-                      }
-                    }
-                }
-
-                val nearestIntercepted = interceptedPoints.minByOrNull {
-                  point.pt distance (it.pt)
-                }
-                if (nearestIntercepted != null) {
-                  regCandidate(mousePt distance nearestIntercepted.pt) {
-                    val newId = addPoint(nearestIntercepted.pt)
-                    savedElements = savedElements.toMutableList().apply {
-                      val i1 = indexOf(nearestIntercepted.curve1)
-                      val i2 = indexOf(nearestIntercepted.curve2)
-                      if (i1 == -1 || i2 == -1) {
-                        println("i1 == -1 || i2 == -1")
-                      }
-                      set(
-                        i1,
-                        (get(i1) as Element.Curve).copy(
-                          points = (get(i1) as Element.Curve).points.toMutableList().apply {
-                            add(nearestIntercepted.pointIndex1 + 1, newId)
-                          }
-                        )
-                      )
-                      set(
-                        i2,
-                        (get(i2) as Element.Curve).copy(
-                          points = (get(i2) as Element.Curve).points.toMutableList().apply {
-                            if (nearestIntercepted.curve1 == nearestIntercepted.curve2 && nearestIntercepted.pointIndex2 > nearestIntercepted.pointIndex1) {
-                              add(nearestIntercepted.pointIndex2 + 2, newId)
-                            } else {
-                              add(nearestIntercepted.pointIndex2 + 1, newId)
+                        set(
+                          i1,
+                          (get(i1) as Element.Curve).copy(
+                            points = (get(i1) as Element.Curve).points.toMutableList().apply {
+                              add(nearestIntercepted.pointIndex1 + 1, newId)
                             }
-                          }
+                          )
                         )
-                      )
-                    }
-                  }
-                }
-                val nearestNew = findNearestNewPoint(mousePt, allSegments)
-                if (nearestNew != null) {
-                  regCandidate((mousePt distance nearestNew.pt) + CLOSE_DISTANCE) {//todo отдаваит предпочтение существующим точкам
-                    val newId = addPoint(nearestNew.pt)
-                    savedElements = savedElements.toMutableList().apply {
-                      val i1 = indexOf(nearestNew.curve1)
-                      if (i1 == -1) {
-                        println("i1 == -1")
+                        set(
+                          i2,
+                          (get(i2) as Element.Curve).copy(
+                            points = (get(i2) as Element.Curve).points.toMutableList().apply {
+                              if (nearestIntercepted.curve1 == nearestIntercepted.curve2 && nearestIntercepted.pointIndex2 > nearestIntercepted.pointIndex1) {
+                                add(nearestIntercepted.pointIndex2 + 2, newId)
+                              } else {
+                                add(nearestIntercepted.pointIndex2 + 1, newId)
+                              }
+                            }
+                          )
+                        )
                       }
-                      set(
-                        i1,
-                        (get(i1) as Element.Curve).copy(
-                          points = (get(i1) as Element.Curve).points.toMutableList().apply {
-                            add(nearestNew.pointIndex + 1, newId)
-                          }
-                        )
-                      )
+                      currentSelectedId = newId
                     }
                   }
+                  val nearestNew = findNearestNewPoint(mousePt, allSegments)
+                  if (nearestNew != null) {
+                    regCandidate((mousePt distance nearestNew.pt) + CLOSE_DISTANCE) {//todo отдаваит предпочтение существующим точкам
+                      val newId = addPoint(nearestNew.pt)
+                      savedElements = savedElements.toMutableList().apply {
+                        val i1 = indexOf(nearestNew.curve1)
+                        if (i1 == -1) {
+                          println("i1 == -1")
+                        }
+                        set(
+                          i1,
+                          (get(i1) as Element.Curve).copy(
+                            points = (get(i1) as Element.Curve).points.toMutableList().apply {
+                              add(nearestNew.pointIndex + 1, newId)
+                            }
+                          )
+                        )
+                      }
+                      currentSelectedId = newId
+                    }
+                  }
+                  actions.minByOrNull { it.key }?.value?.invoke()
                 }
-                actions.minByOrNull { it.key }?.value?.invoke()
-              } else {// mouse over
+              } else {// mouse up
                 currentMousePoint = mousePt
+                currentSelectedId = null
               }
             }
           }

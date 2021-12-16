@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -32,12 +33,15 @@ import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
 import java.awt.Point
 import java.awt.image.BufferedImage
+import kotlin.random.Random
+import kotlin.random.nextUInt
 
 const val CURVE_PRECISION = 25f * 100f
 const val CLOSE_DISTANCE = 5.0
+const val SHOW_INTERCEPTIONS = false
 
 sealed class DrawOptions {
-  class Edit : DrawOptions()
+  data class Edit(val namePrefix: String = "m") : DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -137,6 +141,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                   contentScale = ContentScale.Crop
                 )
               }
+            }
+            is DrawOptions.Edit -> {
+              TextField(options.namePrefix, onValueChange = {
+                replaceChangeOptions{ options.copy(namePrefix = it) }
+              })
             }
           }
         }
@@ -265,7 +274,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  if (controllerState.options is DrawOptions.Edit) {
+  val options = controllerState.options
+  if (options is DrawOptions.Edit) {
     //Selection
     var currentSelectedId: Id? by remember { mutableStateOf(null) }
     var previousSelectedId: Id? by remember { mutableStateOf(null) }
@@ -354,24 +364,27 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
 
     val interceptedPoints: List<InterceptedPoint> by derivedStateOf {
-      buildList<InterceptedPoint> {
-        for (i in 0 until allSegments.size) {
-          for (j in i + 1 until allSegments.size) {
-            //todo N^2
-            val a = allSegments[i]
-            val b = allSegments[j]
-            val interceptedPoints = interceptCubicBezier(a.bezierSegment, b.bezierSegment)
-            interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
-              a.bezierSegment.point(ta)
-              b.bezierSegment.point(tb)
-              val result = InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex)
-              if (mapIdToPoint.values.none { result.pt distance it < CLOSE_DISTANCE }) {
-                add(result)
+      if (SHOW_INTERCEPTIONS) {
+          buildList<InterceptedPoint> {
+            for (i in 0 until allSegments.size) {
+              for (j in i + 1 until allSegments.size) {
+                //todo N^2
+                val a = allSegments[i]
+                val b = allSegments[j]
+                val interceptedPoints = interceptCubicBezier(a.bezierSegment, b.bezierSegment)
+                interceptedPoints.relativePointsA.zip(interceptedPoints.relativePointsB).forEach { (ta, tb) ->
+                  a.bezierSegment.point(ta)
+                  b.bezierSegment.point(tb)
+                  val result = InterceptedPoint(a.bezierSegment.point(ta), a.curve, ta, a.pointIndex, b.curve, tb, b.pointIndex)
+                  if (mapIdToPoint.values.none { result.pt distance it < CLOSE_DISTANCE }) {
+                    add(result)
+                  }
+                }
               }
             }
           }
-        }
-
+      } else {
+          emptyList()
       }
     }
 
@@ -384,7 +397,40 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             val point = event.mouseEvent?.point
             if (point != null) {
               val mousePt = point.pt
-              if (event.buttons.isPrimaryPressed) {
+              if (event.buttons.isPrimaryPressed && event.keyboardModifiers.isShiftPressed) {
+                val nearestPoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
+                if(nearestPoint != null) {
+                  mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                    val oldKey = nearestPoint.key
+                    val newKey = oldKey.copy(name = options.namePrefix + Random.nextUInt())
+                    remove(oldKey)
+                    set(newKey, nearestPoint.value)
+                    savedElements = savedElements.map { e->
+                      when (e) {
+                        is Element.Curve -> {
+                          e.copy(
+                            points = e.points.map {
+                              if (it == oldKey) newKey else it
+                            },
+                            bezierRef = e.bezierRef.toMutableMap().apply {
+                              val moved = remove(oldKey)
+                              if (moved != null) {
+                                put(newKey, moved)
+                              }
+                            }.mapValues {
+                              it.value.copy(
+                                startRef = it.value.startRef.let { if (it == oldKey) newKey else it },
+                                endRef = it.value.endRef.let { if (it == oldKey) newKey else it }
+                              )
+                            }
+                          )
+                        }
+                        else -> TODO("change key in Bitmap and Rectangle")
+                      }
+                    }
+                  }
+                }
+              } else if (event.buttons.isPrimaryPressed) {
                 if (currentSelectedId != null) {
                   mapIdToPoint = mapIdToPoint.toMutableMap().apply {
                     set(currentSelectedId!!, mousePt)
@@ -395,10 +441,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                     actions[distance] = action
                   }
 
-                  val nearestCurvePoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
-                  if (nearestCurvePoint != null) {
-                    regCandidate(mousePt distance nearestCurvePoint.value) {
-                      currentSelectedId = nearestCurvePoint.key
+                  val nearestPoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
+                  if (nearestPoint != null) {
+                    regCandidate(mousePt distance nearestPoint.value) {
+                      currentSelectedId = nearestPoint.key
                     }
                   }
 
@@ -505,8 +551,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           }
         }
     ) {
-      mapIdToPoint.values.forEach {
-        drawCircle(Color.Red, 5f, center = it.offset)
+      mapIdToPoint.forEach {
+        if(it.key.name != null) {
+          drawCircle(Color.Green, 7f, center = it.value.offset)
+          drawCircle(Color.Red, 5f, center = it.value.offset)
+        } else {
+          drawCircle(Color.Red, 5f, center = it.value.offset)
+        }
       }
       bezierPoints.forEach {
         drawLine(

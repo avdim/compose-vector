@@ -510,7 +510,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
       bezierPoints.forEach {
         drawLine(
-          Color.Black,
+          Color.Yellow,
           start = it.originPt(mapIdToPoint).offset,
           end = it.refPt.offset,
           pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))

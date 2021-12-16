@@ -567,7 +567,7 @@ fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
 
 inline fun Id.pt(map: Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map: Map<Id, Pt>): List<Pt> = map { it.pt(map) }
-inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BezierRef(startRef = startRef?.pt(map), endRef = endRef?.pt(map))
+inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BR(startRef = startRef?.pt(map), endRef = endRef?.pt(map))
 
 inline fun findNearestNewPoint(mouse: Pt, allSegments1: List<CurveSegment>): NearestPointOnCurve? {
   return allSegments1.mapIndexed { i, segment ->

@@ -95,7 +95,7 @@ private fun Id.constructorPtOrLink(map: Map<Id, Pt>, idToIndex:Map<Id, Int>): St
 private fun BezierRefEdit.constructorStr(map: Map<Id, Pt>, idToIndex:Map<Id, Int>): String {
   val startRefStr = startRef?.constructorPtOrLink(map, idToIndex)
   val endRefStr = endRef?.constructorPtOrLink(map, idToIndex)
-  return "BezierRef($startRefStr, $endRefStr)"
+  return "BR($startRefStr, $endRefStr)"
 }
 
 private val ULong.literalStr: String get() = "0x" + toString(radix = 16) + "uL"

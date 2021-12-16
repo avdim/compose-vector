@@ -42,6 +42,7 @@ infix fun Pt.distanceF(other: Pt): Float {
   return sqrt(dx * dx + dy * dy)
 }
 
+fun BR(startRef: Pt? = null, endRef: Pt? = null) = BezierRef(startRef, endRef)
 data class BezierRef(
   val startRef: Pt? = null,
   val endRef: Pt? = null

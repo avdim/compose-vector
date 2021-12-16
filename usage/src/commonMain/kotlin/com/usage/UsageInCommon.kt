@@ -57,22 +57,22 @@ fun UsageInCommon() {
 
   GeneratedLayer(Modifier) {
 
-    val h00 by mkPt(animatedHead[0])
-    val h01 by mkPt(animatedHead[1])
-    val h02 by mkPt(animatedHead[2])
-    val h03 by mkPt(animatedHead[3])
-    val h04 by mkPt(animatedHead[4])
-    val h05 by mkPt(animatedHead[5])
-    val h06 by mkPt(animatedHead[6])
-    val h32 by mkPt(animatedHead[7])
-    val h33 by mkPt(animatedHead[8])
-    val h34 by mkPt(animatedHead[9])
-    val h35 by mkPt(animatedHead[10])
-    val h36 by mkPt(animatedHead[11])
-    val h37 by mkPt(animatedHead[12])
-    val h41 by mkPt(animatedHead[13])
-    val h42 by mkPt(animatedHead[14])
-    val h43 by mkPt(animatedHead[15])
+    val h00 = animatedHead[0]
+    val h01 = animatedHead[1]
+    val h02 = animatedHead[2]
+    val h03 = animatedHead[3]
+    val h04 = animatedHead[4]
+    val h05 = animatedHead[5]
+    val h06 = animatedHead[6]
+    val h32 = animatedHead[7]
+    val h33 = animatedHead[8]
+    val h34 = animatedHead[9]
+    val h35 = animatedHead[10]
+    val h36 = animatedHead[11]
+    val h37 = animatedHead[12]
+    val h41 = animatedHead[13]
+    val h42 = animatedHead[14]
+    val h43 = animatedHead[15]
 
     val a = animatedPointsA
     drawCurve(0xffbb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],a[25],a[26],a[27],a[28],a[29],a[30],a[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),a[27] to BR(null, a[44]),a[15] to BR(a[45], null),),)

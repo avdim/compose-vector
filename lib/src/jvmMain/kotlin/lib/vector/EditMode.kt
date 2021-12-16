@@ -26,8 +26,6 @@ import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import lib.vector.intercept.interceptCubicBezier
 import lib.vector.intercept.nearestBezierPoint
 import lib.vector.utils.indexOfFirstOrNull
@@ -66,7 +64,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     )
   }
   var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Curve } ?: 0) }
-  val controllerState: ControllerState = controllers[selectedControllerIndex]
+  val controllerState: ControllerState by derivedStateOf { controllers[selectedControllerIndex] }
   fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
       it[selectedControllerIndex] = it[selectedControllerIndex].copy(
@@ -148,7 +146,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
   var currentPoints by remember { mutableStateOf<List<Id>>(emptyList()) }
   val currentElement: Element? by derivedStateOf {
-    when (controllerState.options) {
+    val cs = controllerState
+    when (cs.options) {
       is DrawOptions.Edit -> null
       is DrawOptions.Curve -> {
         val fullLength = currentPoints.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
@@ -174,7 +173,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           temp.sortBy { it.sumDistance }
         }
         Element.Curve(
-          color = controllerState.options.color,
+          color = cs.options.color,
           points = currentPoints.takeOrSmaller(1) +
             currentPoints.filterIndexed { i, _ -> temp.any { it.current == i } } +
             currentPoints.takeLastOrSmaller(1),
@@ -183,13 +182,13 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
       is DrawOptions.Rect -> {
         if (currentPoints.size >= 2) {
-          Element.Rectangle(controllerState.options.color, currentPoints.first(), currentPoints.last())
+          Element.Rectangle(cs.options.color, currentPoints.first(), currentPoints.last())
         } else {
           null
         }
       }
       is DrawOptions.Img -> {
-        val img = controllerState.options.image
+        val img = cs.options.image
         if (img != null && currentPoints.isNotEmpty()) {
           Element.Bitmap(
             currentPoints.last(),

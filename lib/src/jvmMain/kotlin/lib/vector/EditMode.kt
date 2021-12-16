@@ -8,6 +8,7 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.graphics.Color
@@ -15,6 +16,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -22,6 +24,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import com.intellij.getClipboardImage
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import lib.vector.intercept.interceptCubicBezier
 import lib.vector.intercept.nearestBezierPoint
 import lib.vector.utils.indexOfFirstOrNull
@@ -33,7 +39,7 @@ const val CURVE_PRECISION = 25f
 const val CLOSE_DISTANCE = 5.0
 
 sealed class DrawOptions {
-  class Edit: DrawOptions()
+  class Edit : DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -41,7 +47,7 @@ sealed class DrawOptions {
 
 data class ControllerState(val name: String, val options: DrawOptions)
 
-@OptIn(ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   val initState = initializeByGeneratedScope(lambda)
@@ -263,7 +269,20 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   if (controllerState.options is DrawOptions.Edit) {
     //Selection
     var currentSelectedId: Id? by remember { mutableStateOf(null) }
-    var currentMousePoint: Pt by remember { mutableStateOf(Pt(0,0)) }
+    var previousSelectedId: Id? by remember { mutableStateOf(null) }
+    var currentMousePoint: Pt by remember { mutableStateOf(Pt(0, 0)) }
+
+    LaunchedEffect(Unit) {
+      globalKeyListener.collect {
+        when(it) {
+          Key.Delete, Key.Backspace, Key.D -> {
+            println("delete previousSelectedId: $previousSelectedId")
+            previousSelectedId = null
+          }
+        }
+      }
+    }
+
     val bezierPoints: List<BezierPt> by derivedStateOf {
       buildList {
         savedElements.filterIsInstance<Element.Curve>().forEach { curve ->
@@ -340,16 +359,17 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
             val point = event.mouseEvent?.point
             if (point != null) {
               val mousePt = point.pt
-              if(event.buttons.isPrimaryPressed) {
+              if (event.buttons.isPrimaryPressed) {
                 if (currentSelectedId != null) {
                   mapIdToPoint = mapIdToPoint.toMutableMap().apply {
                     set(currentSelectedId!!, mousePt)
                   }
                 } else {
                   val actions: MutableMap<Double, () -> Unit> = mutableMapOf()
-                  fun regCandidate(distance:Double, action: () -> Unit) {
+                  fun regCandidate(distance: Double, action: () -> Unit) {
                     actions[distance] = action
                   }
+
                   val nearestCurvePoint = mapIdToPoint.minByOrNull { point.pt distance it.value }
                   if (nearestCurvePoint != null) {
                     regCandidate(mousePt distance nearestCurvePoint.value) {
@@ -451,7 +471,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 }
               } else {// mouse up
                 currentMousePoint = mousePt
-                currentSelectedId = null
+                if (currentSelectedId != null) {
+                  previousSelectedId = currentSelectedId
+                  currentSelectedId = null
+                }
               }
             }
           }
@@ -461,7 +484,12 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         drawCircle(Color.Red, 5f, center = it.offset)
       }
       bezierPoints.forEach {
-        drawLine(Color.Black, start = it.originPt(mapIdToPoint).offset, end = it.refPt.offset, pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f)))
+        drawLine(
+          Color.Black,
+          start = it.originPt(mapIdToPoint).offset,
+          end = it.refPt.offset,
+          pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))
+        )
         drawCircle(Color.Black, 3f, center = it.refPt.offset)
       }
       interceptedPoints.forEach {
@@ -533,6 +561,9 @@ class NearestPointOnCurve(
   val curve1: Element.Curve,
   val pointIndex: Int,
 )
+
 class CurveSegment(val curve: Element.Curve, val pointIndex: Int, val bezierSegment: BezierSegment)
 class BezierPt(val refPt: Pt, val id: Id?, val curve: Element.Curve, val key: Id, val isRefA: Boolean)
+
 fun BezierPt.originPt(mapIdToPoint: Map<Id, Pt>): Pt = mapIdToPoint[key]!!
+val globalKeyListener:MutableSharedFlow<Key> = MutableSharedFlow()

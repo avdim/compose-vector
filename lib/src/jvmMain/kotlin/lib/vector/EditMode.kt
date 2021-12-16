@@ -276,8 +276,32 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       globalKeyListener.collect {
         when(it) {
           Key.Delete, Key.Backspace, Key.D -> {
-            if(previousSelectedId != null) {
-              println("delete previousSelectedId: $previousSelectedId")
+            val deleteId = previousSelectedId
+            if(deleteId != null) {
+              println("delete deleteId: $deleteId")
+              savedElements = savedElements.toMutableList().apply {
+                for(i in this.indices.reversed()) {
+                  val element = get(i)
+                  when (element) {
+                    is Element.Curve -> {
+                      this[i] = element.copy(
+                        points = element.points.filter { it != deleteId },
+                        bezierRef = element.bezierRef.mapValues {
+                          it.value.copy(
+                            startRef = if (it.value.startRef == deleteId) null else it.value.startRef,
+                            endRef = if (it.value.endRef == deleteId) null else it.value.endRef
+                          )
+                        }.toMutableMap().apply {
+                          remove(deleteId)
+                        }
+                      )
+                    }
+                  }
+                }
+              }
+              mapIdToPoint = mapIdToPoint.toMutableMap().apply {
+                remove(deleteId)
+              }
               previousSelectedId = null
             }
           }

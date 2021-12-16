@@ -39,6 +39,8 @@ import kotlin.random.nextUInt
 const val CURVE_PRECISION = 25f * 100f
 const val CLOSE_DISTANCE = 5.0
 const val SHOW_INTERCEPTIONS = false
+const val MOVE_NEAREST_BEZIER_REF = false
+const val MOVE_NEAREST_NEW_POINT = false
 
 sealed class DrawOptions {
   data class Edit(val namePrefix: String = "m") : DrawOptions()
@@ -451,7 +453,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                   val nearestBezierRef: BezierPt? = bezierPoints.minByOrNull { bezierPt ->
                     point.pt distance (bezierPt.id?.let { mapIdToPoint[it] } ?: bezierPt.refPt)
                   }
-                  if (nearestBezierRef != null) {
+                  if (MOVE_NEAREST_BEZIER_REF && nearestBezierRef != null) {
                     regCandidate(mousePt distance nearestBezierRef.refPt) {
                       // create new pt
                       val id = nearestBezierRef.id
@@ -518,7 +520,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                     }
                   }
                   val nearestNew = findNearestNewPoint(mousePt, allSegments)
-                  if (nearestNew != null) {
+                  if (MOVE_NEAREST_NEW_POINT && nearestNew != null) {
                     regCandidate((mousePt distance nearestNew.pt) + CLOSE_DISTANCE) {//todo отдаваит предпочтение существующим точкам
                       val newId = addPoint(nearestNew.pt)
                       savedElements = savedElements.toMutableList().apply {
@@ -553,27 +555,31 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     ) {
       mapIdToPoint.forEach {
         if(it.key.name != null) {
-          drawCircle(Color.Green, 7f, center = it.value.offset)
-          drawCircle(Color.Red, 5f, center = it.value.offset)
+          drawCircle(Color.Green, 4f, center = it.value.offset)
+          drawCircle(Color.Red, 2f, center = it.value.offset)
         } else {
           drawCircle(Color.Red, 5f, center = it.value.offset)
         }
       }
-      bezierPoints.forEach {
-        drawLine(
-          Color.Yellow,
-          start = it.originPt(mapIdToPoint).offset,
-          end = it.refPt.offset,
-          pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))
-        )
-        drawCircle(Color.Yellow, 3f, center = it.refPt.offset)
+      if(MOVE_NEAREST_BEZIER_REF) {
+        bezierPoints.forEach {
+          drawLine(
+            Color.Yellow,
+            start = it.originPt(mapIdToPoint).offset,
+            end = it.refPt.offset,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))
+          )
+          drawCircle(Color.Yellow, 3f, center = it.refPt.offset)
+        }
       }
       interceptedPoints.forEach {
         drawCircle(Color.Yellow, 5f, center = it.pt.offset)
         drawCircle(Color.Red, 3f, center = it.pt.offset)
       }
-      findNearestNewPoint(currentMousePoint, allSegments)?.let {
-        drawCircle(Color.Green, 3f, center = it.pt.offset)
+      if(MOVE_NEAREST_NEW_POINT) {
+        findNearestNewPoint(currentMousePoint, allSegments)?.let {
+          drawCircle(Color.Green, 3f, center = it.pt.offset)
+        }
       }
     }
   }

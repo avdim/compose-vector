@@ -5,6 +5,7 @@ import lib.vector.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import lib.vector.Pt
+import kotlin.random.Random
 
 @Composable
 fun UsageInCommon() {
@@ -43,18 +44,27 @@ fun UsageInCommon() {
     )
   )
 
-  val tailAnimationRadio by infiniteTransition.animateFloat(
-    initialValue = 0f,
-    targetValue = 1f,
-    animationSpec = infiniteRepeatable(
-      animation = keyframes {
-        durationMillis = 1600
-//        0.3f at 200
-//        0.7f at 600
-      },
-      repeatMode = RepeatMode.Reverse
-    )
-  )
+  var tailAnimationRadio by remember { mutableStateOf(0f) }
+
+  LaunchedEffect(Unit) {
+    while(true) {
+      withFrameNanos { it }
+      tailAnimationRadio = Random.nextDouble(0.0, 1.0).toFloat()
+    }
+  }
+
+//  val tailAnimationRadio by infiniteTransition.animateFloat(
+//    initialValue = 0f,
+//    targetValue = 1f,
+//    animationSpec = infiniteRepeatable(
+//      animation = keyframes {
+//        durationMillis = 1600
+////        0.3f at 200
+////        0.7f at 600
+//      },
+//      repeatMode = RepeatMode.Reverse
+//    )
+//  )
 
   val animatedHead:List<Pt> by derivedStateOf {
     val f = headAnimationRadio

@@ -24,7 +24,8 @@ fun UsageInCommon() {
     animationSpec = infiniteRepeatable(
       animation = keyframes {
         durationMillis = 1000
-        0.5f at 500
+        0.2f at 300
+        0.8f at 700
       },
       repeatMode = RepeatMode.Reverse
     )

@@ -30,6 +30,24 @@ fun UsageInCommon() {
     Pt(247, 233),
   )
 
+  val head2 = listOf(
+    Pt(186, 236),
+    Pt(179, 264),
+    Pt(155, 279),
+    Pt(133, 312),
+    Pt(141, 331),
+    Pt(159, 344),
+    Pt(191, 358),
+    Pt(474, 331),
+    Pt(369, 342),
+    Pt(288, 315),
+    Pt(245, 274),
+    Pt(213, 233),
+    Pt(207, 257),
+    Pt(153, 305),
+    Pt(211, 247),
+    Pt(234, 253),
+  )
 
   val infiniteTransition = rememberInfiniteTransition()
   val animatedFloat by infiniteTransition.animateFloat(
@@ -45,12 +63,10 @@ fun UsageInCommon() {
     )
   )
 
-//  val animatedHead:List<Pt> by derivedStateOf {
-//    val f = animatedFloat
-//    head1.mapIndexed { i, pt -> pt + (head2[i] - pt) * f }
-//  }
-//
-  val animatedHead = head1
+  val animatedHead:List<Pt> by derivedStateOf {
+    val f = animatedFloat
+    head1.mapIndexed { i, pt -> pt + (head2[i] - pt) * f }
+  }
 
   val animatedPointsA: List<Pt> by derivedStateOf {
     val f = animatedFloat
@@ -61,29 +77,7 @@ fun UsageInCommon() {
     points2.mapIndexed { i, pt -> pt + (points1[i] - pt) * f }
   }
 //  CatBitmap()
-  DisplayMode(Modifier) {
 
-    val h00 by mkPt(animatedHead[0])
-    val h01 by mkPt(animatedHead[1])
-    val h02 by mkPt(animatedHead[2])
-    val h03 by mkPt(animatedHead[3])
-    val h04 by mkPt(animatedHead[4])
-    val h05 by mkPt(animatedHead[5])
-    val h06 by mkPt(animatedHead[6])
-    val h32 by mkPt(animatedHead[7])
-    val h33 by mkPt(animatedHead[8])
-    val h34 by mkPt(animatedHead[9])
-    val h35 by mkPt(animatedHead[10])
-    val h36 by mkPt(animatedHead[11])
-    val h37 by mkPt(animatedHead[12])
-    val h41 by mkPt(animatedHead[13])
-    val h42 by mkPt(animatedHead[14])
-    val h43 by mkPt(animatedHead[15])
-
-    val a = animatedPointsA
-    drawCurve(0xff00ff0000000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],a[25],a[26],a[27],a[28],a[29],a[30],a[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),a[2] to BR(h41, null),h36 to BR(h42, h43),a[27] to BR(null, a[44]),a[15] to BR(a[45], null),),)
-
-  }
   GeneratedLayer(Modifier) {
 
     val h00 by mkPt(animatedHead[0])
@@ -104,9 +98,9 @@ fun UsageInCommon() {
     val h43 by mkPt(animatedHead[15])
 
     val a = animatedPointsA
-    drawCurve(0x44bb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],a[25],a[26],a[27],a[28],a[29],a[30],a[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),a[2] to BR(h41, null),h36 to BR(h42, h43),a[27] to BR(null, a[44]),a[15] to BR(a[45], null),),)
-//    val b = animatedPointsB
-//    drawCurve(0x44bb00cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],b[25],b[26],b[27],b[28],b[29],b[30],b[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),b[2] to BR(h41, null),h36 to BR(h42, h43),b[27] to BR(null, b[44]),b[15] to BR(b[45], null),),)
+    drawCurve(0x44bb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],a[25],a[26],a[27],a[28],a[29],a[30],a[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),a[27] to BR(null, a[44]),a[15] to BR(a[45], null),),)
+    val b = animatedPointsB
+    drawCurve(0x44bb00cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],b[25],b[26],b[27],b[28],b[29],b[30],b[31],h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),b[27] to BR(null, b[44]),b[15] to BR(b[45], null),),)
   }
 
 }

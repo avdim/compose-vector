@@ -69,7 +69,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       )
     )
   }
-  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Curve } ?: 0) }
+  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Edit } ?: 0) }
   val controllerState: ControllerState by derivedStateOf { controllers[selectedControllerIndex] }
   fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
@@ -86,7 +86,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
 
   // UI
-  var editPanelIsOpen by remember { mutableStateOf(true) }
+  var editPanelIsOpen by remember { mutableStateOf(false) }
   if (editPanelIsOpen) {
     Window(
       state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
@@ -285,6 +285,15 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
     LaunchedEffect(Unit) {
       globalKeyListener.collect {
+        fun moveNamedPoint(dx:Int, dy:Int) {
+          mapIdToPoint = mapIdToPoint.mapValues {
+            if(it.key.name != null) {
+              Pt(it.value.x + dx, it.value.y + dy)
+            } else {
+              it.value
+            }
+          }
+        }
         when(it) {
           Key.Delete, Key.Backspace, Key.D -> {
             val deleteId = previousSelectedId
@@ -315,6 +324,18 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               }
               previousSelectedId = null
             }
+          }
+          Key.DirectionLeft -> {
+            moveNamedPoint(-1, 0)
+          }
+          Key.DirectionRight -> {
+            moveNamedPoint(1, 0)
+          }
+          Key.DirectionDown -> {
+            moveNamedPoint(0, 1)
+          }
+          Key.DirectionUp -> {
+            moveNamedPoint(0, -1)
           }
         }
       }

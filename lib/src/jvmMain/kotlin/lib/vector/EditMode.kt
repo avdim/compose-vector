@@ -276,8 +276,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       globalKeyListener.collect {
         when(it) {
           Key.Delete, Key.Backspace, Key.D -> {
-            println("delete previousSelectedId: $previousSelectedId")
-            previousSelectedId = null
+            if(previousSelectedId != null) {
+              println("delete previousSelectedId: $previousSelectedId")
+              previousSelectedId = null
+            }
           }
         }
       }

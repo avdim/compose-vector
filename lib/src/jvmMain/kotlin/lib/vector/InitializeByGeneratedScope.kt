@@ -5,7 +5,8 @@ data class EditState(
   val savedElements: List<Element>
 )
 
-fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit):EditState {
+@OptIn(ExperimentalStdlibApi::class)
+fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit): EditState {
   // Init
   val generatedMapIdToPoint: MutableMap<Id, Pt> = mutableMapOf()
   val generatedElements: MutableList<Element> = mutableListOf()
@@ -26,12 +27,21 @@ fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit):EditState {
       pt
     }
 
-    override fun drawCurve(color: ULong, points: List<Pt>, bezieRef: Map<Pt, BezierRef>) {
+    override fun drawCurve(color: ULong, points: List<Pt>, bezierRef: Map<Pt, BezierRef>) {
       generatedElements.add(
         Element.Curve(
           color = color,
           points = points.map(::mapPtToId),
-          emptyMap()//todo
+          buildMap {
+            bezierRef.forEach {
+              put(
+                mapPtToId(it.key), BezierRefEdit(
+                  startRef = it.value.startRef?.let(::mapPtToId),
+                  endRef = it.value.endRef?.let(::mapPtToId)
+                )
+              )
+            }
+          }
         )
       )
     }

@@ -28,7 +28,14 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
               e.points.forEach {
                 append("${it.constructorPtOrLink(mapIdToPoint)},")
               }
-              append(")")
+              append("),")
+              append(" mapOf(")
+              e.bezierRef.forEach {
+                val keyStr = it.key.constructorPtOrLink(mapIdToPoint)
+                val valueStr = it.value.constructorStr(mapIdToPoint)
+                append("$keyStr to $valueStr,")
+              }
+              append("),")
               append(")")
             }
             is Element.Rectangle -> {
@@ -56,5 +63,10 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
 }
 
 private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String = if (name != null) name else pt(map).run { "Pt(${x.toInt()}, ${y.toInt()})" }
+private fun BezierRefEdit.constructorStr(map: Map<Id, Pt>): String {
+  val startRefStr = startRef?.constructorPtOrLink(map)
+  val endRefStr = endRef?.constructorPtOrLink(map)
+  return "BezierRef($startRefStr, $endRefStr)"
+}
 
 private val ULong.literalStr: String get() = "0x" + toString(radix = 16) + "uL"

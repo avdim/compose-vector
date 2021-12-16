@@ -10,14 +10,22 @@ fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit): EditState {
   // Init
   val generatedMapIdToPoint: MutableMap<Id, Pt> = mutableMapOf()
   val generatedElements: MutableList<Element> = mutableListOf()
-  fun mapPtToId(pt: Pt): Id =
+  fun mapPtToId(pt: Pt): Id {
     if (pt is PtEdit) {
-      pt.id
+      return pt.id
     } else {
-      val id = getNextPointId()
-      generatedMapIdToPoint[id] = pt
-      id
+      val existedEntry = generatedMapIdToPoint.entries.firstOrNull {
+        it.value.x == pt.x && it.value.y == pt.y
+      }
+      if (existedEntry != null) {
+        return existedEntry.key
+      } else {
+        return getNextPointId().also {
+          generatedMapIdToPoint[it] = pt
+        }
+      }
     }
+  }
 
   val generatedScope = object : GeneratedScope {
     override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, property ->

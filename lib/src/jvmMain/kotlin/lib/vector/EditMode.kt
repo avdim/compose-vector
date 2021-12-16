@@ -33,7 +33,7 @@ import lib.vector.utils.toByteArray
 import java.awt.Point
 import java.awt.image.BufferedImage
 
-const val CURVE_PRECISION = 25f
+const val CURVE_PRECISION = 25f * 100f
 const val CLOSE_DISTANCE = 5.0
 
 sealed class DrawOptions {
@@ -515,10 +515,11 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           end = it.refPt.offset,
           pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))
         )
-        drawCircle(Color.Black, 3f, center = it.refPt.offset)
+        drawCircle(Color.Yellow, 3f, center = it.refPt.offset)
       }
       interceptedPoints.forEach {
         drawCircle(Color.Yellow, 5f, center = it.pt.offset)
+        drawCircle(Color.Red, 3f, center = it.pt.offset)
       }
       findNearestNewPoint(currentMousePoint, allSegments)?.let {
         drawCircle(Color.Green, 3f, center = it.pt.offset)

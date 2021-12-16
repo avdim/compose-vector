@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.drawscope.*
 import lib.vector.utils.toImageBitmap
 
 const val DEFAULT_BEZIER_SCALE = 0.5f
-const val FILL_PATH = false
+const val FILL_PATH = true
 
 @Composable
 fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {

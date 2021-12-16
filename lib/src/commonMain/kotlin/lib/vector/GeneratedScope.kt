@@ -10,6 +10,7 @@ interface GeneratedScope {
   fun drawBitmap(pt: Pt, byteArray: ByteArray)
 
   fun mkPt(x: Int, y: Int): MakePt = mkPt(x.toFloat(), y.toFloat())
+  fun mkPt(pt:Pt): MakePt = mkPt(pt.x, pt.y)
   fun drawBitmap(pt: Pt, base64Str: String) = drawBitmap(pt, base64Str.fromBase64())
 }
 

@@ -5,6 +5,7 @@ import lib.vector.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import lib.vector.Pt
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 @Composable
@@ -44,12 +45,16 @@ fun UsageInCommon() {
     )
   )
 
-  var tailAnimationRadio by remember { mutableStateOf(0f) }
+  var tailAnimationRatio by remember { mutableStateOf(0f) }
+  var targetTailRatio by remember { mutableStateOf(0f) }
 
   LaunchedEffect(Unit) {
     while(true) {
       withFrameNanos { it }
-      tailAnimationRadio = Random.nextDouble(0.0, 1.0).toFloat()
+      if ((tailAnimationRatio - targetTailRatio).absoluteValue < 0.01f) {
+        targetTailRatio = Random.nextDouble(0.0, 1.0).toFloat()
+      }
+      tailAnimationRatio += (targetTailRatio - tailAnimationRatio) / 50
     }
   }
 
@@ -72,7 +77,7 @@ fun UsageInCommon() {
   }
 
   val animatedTail:List<Pt> by derivedStateOf {
-    val f = tailAnimationRadio
+    val f = tailAnimationRatio
     tail2.mapIndexed { i, pt -> pt + (tail1[i] - pt) * f }
   }
 
@@ -115,9 +120,9 @@ fun UsageInCommon() {
     val t44 by mkPt(animatedTail[7])
 
     val a = animatedPointsA
-    drawCurve(0x55bb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),)
+    drawCurve(0xff00009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),)
     val b = animatedPointsB
-    drawCurve(0x55bb00cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),)
+    drawCurve(0xff0000cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),)
   }
 
 }

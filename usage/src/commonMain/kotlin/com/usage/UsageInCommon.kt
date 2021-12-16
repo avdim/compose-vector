@@ -15,7 +15,7 @@ fun UsageInCommon() {
   val head2 = listOf(Pt(177, 256),Pt(175, 282),Pt(151, 297),Pt(129, 330),Pt(137, 349),Pt(155, 362),Pt(187, 376),Pt(454, 322),Pt(355, 352),Pt(284, 333),Pt(241, 292),Pt(206, 251),Pt(203, 275),Pt(149, 323),Pt(207, 265),Pt(230, 271))
 
   val tail1 = listOf(Pt(605, 265), Pt(581, 208), Pt(596, 166), Pt(560, 179), Pt(559, 243), Pt(580, 297), Pt(553, 325), Pt(607, 190))
-  val tail2 = listOf(Pt(605, 265), Pt(581, 208), Pt(596, 166), Pt(560, 179), Pt(559, 243), Pt(580, 297), Pt(553, 325), Pt(607, 190))
+  val tail2 = listOf(Pt(657, 308), Pt(696, 280), Pt(747, 264), Pt(714, 241), Pt(651, 267), Pt(601, 296), Pt(553, 325), Pt(716, 271))
 
   val infiniteTransition = rememberInfiniteTransition()
   val legsAnimationRadio by infiniteTransition.animateFloat(
@@ -48,9 +48,9 @@ fun UsageInCommon() {
     targetValue = 1f,
     animationSpec = infiniteRepeatable(
       animation = keyframes {
-        durationMillis = 1500
-        0.3f at 300
-        0.7f at 700
+        durationMillis = 1600
+//        0.3f at 200
+//        0.7f at 600
       },
       repeatMode = RepeatMode.Reverse
     )
@@ -63,7 +63,7 @@ fun UsageInCommon() {
 
   val animatedTail:List<Pt> by derivedStateOf {
     val f = tailAnimationRadio
-    tail1.mapIndexed { i, pt -> pt + (tail2[i] - pt) * f }
+    tail2.mapIndexed { i, pt -> pt + (tail1[i] - pt) * f }
   }
 
   val animatedPointsA: List<Pt> by derivedStateOf {
@@ -74,7 +74,7 @@ fun UsageInCommon() {
     val f = legsAnimationRadio
     points2.mapIndexed { i, pt -> pt + (points1[i] - pt) * f }
   }
-  CatBitmap()
+//  CatBitmap()
 
   GeneratedLayer(Modifier) {
 
@@ -105,9 +105,9 @@ fun UsageInCommon() {
     val t44 by mkPt(animatedTail[7])
 
     val a = animatedPointsA
-    drawCurve(0xffbb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),)
+    drawCurve(0x55bb009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),)
     val b = animatedPointsB
-    drawCurve(0xffbb00cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),)
+    drawCurve(0x55bb00cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),)
   }
 
 }

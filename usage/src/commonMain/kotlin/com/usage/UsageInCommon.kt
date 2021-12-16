@@ -2,8 +2,6 @@ package com.usage
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Text
 import lib.vector.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.remember
@@ -24,15 +22,22 @@ fun UsageInCommon() {
 //  }
 
   GeneratedLayer(Modifier) {
-//    val myPt by mkPt(140, 91)
-    val p1 = Pt(423, 167)
-    val p2 = Pt(427, 276)
-    drawCurve(
-      0xff0000ff00000000uL, listOf(p1, p2), bezierRef = mapOf(
-        p1 to BezierRef(startRef = Pt(450, 211)),
-        p2 to BezierRef(endRef = Pt(458, 240))
-      )
-    )
+
+    val p1 by mkPt(205, 340)
+    val p2 by mkPt(442, 180)
+    val p3 by mkPt(478, 425)
+    val p4 by mkPt(208, 345)
+    val p5 by mkPt(357, 324)
+    val p6 by mkPt(349, 347)
+    val p7 by mkPt(340, 509)
+    val p8 by mkPt(267, 179)
+    val p9 by mkPt(562, 233)
+    val p10 by mkPt(381, 316)
+    val p11 by mkPt(470, 300)
+    val p12 by mkPt(478, 335)
+    drawCurve(0xff0000ff00000000uL,listOf(p1,p2,p10,p3,p4,), mapOf(p1 to BezierRef(p5, null),p4 to BezierRef(null, p6),p3 to BezierRef(p7, null),p2 to BezierRef(p9, p8),p10 to BezierRef(p12, p11),),)
+
+
   }
 
 //  Column {

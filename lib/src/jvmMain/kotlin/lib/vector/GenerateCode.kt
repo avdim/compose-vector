@@ -16,6 +16,10 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
           addStatement(buildString {
             append("val $name by mkPt(${it.value.x.toInt()}, ${it.value.y.toInt()})")
           })
+        } else {
+          addStatement(buildString {
+            append("val p${it.key.value} by mkPt(${it.value.x.toInt()}, ${it.value.y.toInt()})")
+          })
         }
       }
       elements.forEach { e ->
@@ -62,7 +66,12 @@ fun generateCode(elements: List<Element>, mapIdToPoint: Map<Id, Pt>): String {
 //  return file.toString()
 }
 
-private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String = if (name != null) name else pt(map).run { "Pt(${x.toInt()}, ${y.toInt()})" }
+private fun Id.constructorPtOrLink(map: Map<Id, Pt>): String =
+  if (name != null) name else {
+    "p${value}"
+//    pt(map).run { "Pt(${x.toInt()}, ${y.toInt()})" }
+  }
+
 private fun BezierRefEdit.constructorStr(map: Map<Id, Pt>): String {
   val startRefStr = startRef?.constructorPtOrLink(map)
   val endRefStr = endRef?.constructorPtOrLink(map)

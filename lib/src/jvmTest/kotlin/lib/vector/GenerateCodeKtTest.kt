@@ -14,8 +14,8 @@ class GenerateCodeKtTest {
       val p3 by mkPt(450, 211)
       drawCurve(
         0xff0000ff00000000uL, listOf(p1, p2), mapOf(
-          p1 to BezierRef(startRef = p3),
-          p2 to BezierRef(endRef = Pt(458, 240))
+          p1 to BezierRef(p3, null),
+          p2 to BezierRef(null, Pt(458, 240))
         )
       )
     }

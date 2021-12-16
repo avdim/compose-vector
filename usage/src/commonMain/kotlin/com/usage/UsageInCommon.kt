@@ -22,22 +22,9 @@ fun UsageInCommon() {
 //  }
 
   GeneratedLayer(Modifier) {
-
-    val p1 by mkPt(205, 340)
-    val p2 by mkPt(442, 180)
-    val p3 by mkPt(478, 425)
-    val p4 by mkPt(208, 345)
-    val p5 by mkPt(357, 324)
-    val p6 by mkPt(349, 347)
-    val p7 by mkPt(340, 509)
-    val p8 by mkPt(267, 179)
-    val p9 by mkPt(562, 233)
-    val p10 by mkPt(381, 316)
-    val p11 by mkPt(470, 300)
-    val p12 by mkPt(478, 335)
-    drawCurve(0xff0000ff00000000uL,listOf(p1,p2,p10,p3,p4,), mapOf(p1 to BezierRef(p5, null),p4 to BezierRef(null, p6),p3 to BezierRef(p7, null),p2 to BezierRef(p9, p8),p10 to BezierRef(p12, p11),),)
-
-
+    val keyPt1 by mkPt(397, 142)
+    val l = listOf(Pt(160, 172),Pt(623, 403),Pt(207, 528),Pt(232, 150),Pt(322, 349),Pt(310, 265),)
+    drawCurve(0xff0000ff00000000uL,listOf(l[0],keyPt1,l[1],l[2],l[3],), mapOf(keyPt1 to BezierRef(l[4], l[5]),),)
   }
 
 //  Column {

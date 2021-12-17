@@ -22,16 +22,7 @@ fun UsageInCommon(modifier: Modifier = Modifier) {
   Cat(modifier)
 
   if (DRAW_SNOW_DRIFT) {
-    var snowDiffX by remember { mutableStateOf(0f) }
-    LaunchedEffect(Unit) {
-      while (true) {
-        withFrameNanos { it }
-        snowDiffX += 3f
-      }
-    }
-    repeat(20) {
-      SnowDrift(modifier, dx = snowDiffX + remember { Random.nextInt(-3000, 2000).toFloat() })
-    }
+    ManySnowDrifts()
   }
 
   GeneratedLayer(modifier) {
@@ -51,7 +42,7 @@ fun BackgroundHills() {
   val bottomLeft = Pt(leftX, bottomY)
   val bottomRight = Pt(rightX, bottomY)
   val pointsCount = 15
-  val stepWidth = (rightX - leftX) / 15
+  val stepWidth = (rightX - leftX) / pointsCount
   val speed = 1.3f
   var curvePoints: List<Pt> by remember {
     mutableStateOf(
@@ -80,8 +71,32 @@ fun BackgroundHills() {
   }
 }
 
+
 @Composable
-fun SnowDrift(modifier:Modifier, dx:Float, dy:Float = 0f) {
+fun ManySnowDrifts() {
+  val leftX = -3000f
+  val rightX = 2000f
+  val bottomY = 800f
+  val bottomLeft = Pt(leftX, bottomY)
+  val bottomRight = Pt(rightX, bottomY)
+  val pointsCount = 20
+  val stepWidth = (rightX - leftX) / pointsCount
+  val speed = 3f
+
+  var snowDiffX by remember { mutableStateOf(0f) }
+  LaunchedEffect(Unit) {
+    while (true) {
+      withFrameNanos { it }
+      snowDiffX += speed
+    }
+  }
+  repeat(pointsCount) {
+    SnowDrift(dx = snowDiffX + remember { Random.nextInt(-3000, 2000).toFloat() })
+  }
+}
+
+@Composable
+fun SnowDrift(dx:Float, dy:Float = 0f) {
   val pathPoints = remember {
     listOf(
       listOf(Pt(11, 753),Pt(135, 630),Pt(358, 578),Pt(535, 623),Pt(663, 747),),
@@ -97,7 +112,7 @@ fun SnowDrift(modifier:Modifier, dx:Float, dy:Float = 0f) {
     0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
   }
   val diffPoints = pathPoints.map { it.copy(x = it.x + dx, y = it.y + dy + SNOW_DRIFT_DY) }
-  DisplayMode(modifier) {
+  DisplayMode() {
     drawCurve(color, diffPoints, fillPath = true)
   }
 }

@@ -42,19 +42,19 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       }
 
       override fun drawRect(color: ULong, start: Pt, end: Pt) {
-        rotate(degrees = 0f, pivot = start.offset) {
+//        rotate(degrees = 0f, pivot = start.offset) {
           drawRect(
             color = Color(color),
             topLeft = Offset(minOf(start.x, end.x), minOf(start.y, end.y)),
             size = (end - start).size
           )
-        }
+//        }
       }
 
       override fun drawBitmap(pt: Pt, byteArray: ByteArray) {
-        scale(1f, pivot = pt.offset) {
+//        scale(1f, pivot = pt.offset) {
           drawImage(image = byteArray.toImageBitmap(), topLeft = pt.offset)
-        }
+//        }
       }
     }
     generatedScope.lambda()

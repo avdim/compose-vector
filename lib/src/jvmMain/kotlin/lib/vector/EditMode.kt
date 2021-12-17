@@ -626,7 +626,13 @@ fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>): Map<Pt, BezierRef> {
   return result
 }
 
-val Point.pt get() = Pt(x.toFloat(), y.toFloat())
+val isMacOS get() = System.getProperty("os.name")?.contains("Mac OS") ?: false
+val Point.pt get() =
+  if(isMacOS) {
+    Pt(x.toFloat()*2, y.toFloat()*2) //todo наверное из за высокого разрешения
+  } else {
+    Pt(x.toFloat(), y.toFloat())
+  }
 
 @Composable
 fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {

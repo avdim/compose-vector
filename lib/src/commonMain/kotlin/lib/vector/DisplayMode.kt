@@ -16,7 +16,7 @@ const val DEFAULT_BEZIER_SCALE = 0.5f
 const val FILL_PATH = true
 
 @Composable
-fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
+fun DisplayMode(modifier: Modifier = Modifier, lambda: GeneratedScope.() -> Unit) {
   Canvas(modifier.wrapContentSize(Alignment.Center).fillMaxSize()) {
     val generatedScope = object : GeneratedScope {
       override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, _ -> Pt(x, y) }

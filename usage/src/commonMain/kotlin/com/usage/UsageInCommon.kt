@@ -8,8 +8,44 @@ import lib.vector.Pt
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
+const val DRAW_SNOW_DRIFT = true
+
+@OptIn(ExperimentalStdlibApi::class)
 @Composable
-fun UsageInCommon() {
+fun UsageInCommon(modifier: Modifier = Modifier) {
+  if(DRAW_SNOW_DRIFT) {
+    val color = remember {
+      val c = (180 + 60).toULong()
+      0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
+    }
+    var backgroundDiffX by remember { mutableStateOf(0f) }
+    LaunchedEffect(Unit) {
+      while (true) {
+        withFrameNanos { it }
+        backgroundDiffX += 1.3f
+      }
+    }
+    val curvePoints = remember {
+      val leftX = -3000
+      val rightX = 2000
+      val bottomLeft = Pt(-3000, 800)
+      val bottomRight = Pt(2000, 800)
+      val pointsCount = 15
+      val stepWidth = (rightX - leftX) / 15
+      val points = List(pointsCount) {
+        Pt(leftX + stepWidth * it, 200 + Random.nextInt(0, 120))
+      }
+      buildList {
+        add(bottomLeft)
+        addAll(points)
+        add(bottomRight)
+      }
+    }
+    DisplayMode(modifier) {
+      drawCurve(color, curvePoints.map { it.copy(x = it.x + backgroundDiffX) }, emptyMap(), fillPath = true)
+    }
+  }
+
   val points1 = listOf(Pt(205, 211),Pt(201, 242),Pt(169, 259),Pt(147, 292),Pt(155, 311),Pt(173, 324),Pt(205, 338),Pt(223, 407),Pt(214, 471),Pt(162, 518),Pt(132, 572),Pt(203, 533),Pt(283, 492),Pt(365, 478),Pt(446, 473),Pt(583, 473),Pt(667, 502),Pt(713, 536),Pt(732, 572),Pt(765, 577),Pt(765, 533),Pt(733, 490),Pt(701, 445),Pt(658, 379),Pt(626, 340),Pt(605, 265),Pt(581, 208),Pt(596, 166),Pt(560, 179),Pt(559, 243),Pt(580, 297),Pt(562, 326),Pt(489, 329),Pt(385, 336),Pt(304, 305),Pt(257, 256),Pt(239, 214),Pt(225, 237),Pt(160, 575),Pt(111, 532),Pt(232, 519),Pt(167, 285),Pt(232, 228),Pt(247, 233),Pt(607, 190),Pt(641, 486),)
   val points2 = listOf(Pt(205, 211),Pt(201, 242),Pt(169, 259),Pt(147, 292),Pt(155, 311),Pt(173, 324),Pt(205, 338),Pt(245, 431),Pt(310, 474),Pt(331, 538),Pt(309, 597),Pt(368, 564),Pt(377, 509),Pt(392, 472),Pt(454, 468),Pt(501, 475),Pt(535, 510),Pt(519, 548),Pt(487, 575),Pt(520, 592),Pt(552, 571),Pt(581, 536),Pt(598, 484),Pt(624, 425),Pt(631, 342),Pt(605, 265),Pt(581, 208),Pt(596, 166),Pt(560, 179),Pt(559, 243),Pt(580, 297),Pt(562, 326),Pt(489, 329),Pt(385, 336),Pt(304, 305),Pt(257, 256),Pt(239, 214),Pt(225, 237),Pt(365, 601),Pt(289, 568),Pt(385, 536),Pt(167, 285),Pt(232, 228),Pt(247, 233),Pt(607, 190),Pt(528, 488),)
 
@@ -91,7 +127,7 @@ fun UsageInCommon() {
   }
 //  CatBitmap()
 
-  DisplayMode(Modifier) {
+  DisplayMode(modifier) {
     val h00 = animatedHead[0]
     val h01 = animatedHead[1]
     val h02 = animatedHead[2]
@@ -124,19 +160,20 @@ fun UsageInCommon() {
     drawCurve(0xff55555500000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),true)
   }
 
-
-  var snowDiffX by remember { mutableStateOf(0f) }
-  LaunchedEffect(Unit) {
-    while(true) {
-      withFrameNanos { it }
-      snowDiffX += 3f
+  if (DRAW_SNOW_DRIFT) {
+    var snowDiffX by remember { mutableStateOf(0f) }
+    LaunchedEffect(Unit) {
+      while (true) {
+        withFrameNanos { it }
+        snowDiffX += 3f
+      }
+    }
+    repeat(20) {
+      SnowDrift(modifier, dx = snowDiffX + remember { Random.nextInt(-3000, 2000).toFloat() })
     }
   }
-  repeat(20) {
-    SnowDrift(dx = snowDiffX + remember { Random.nextInt(-3000, 2000).toFloat() })
-  }
 
-  GeneratedLayer(Modifier) {
+  GeneratedLayer(modifier) {
 
   }
 }
@@ -144,7 +181,7 @@ fun UsageInCommon() {
 const val SNOW_DRIFT_DY = -30f
 
 @Composable
-fun SnowDrift(modifier:Modifier = Modifier, dx:Float, dy:Float = 0f) {
+fun SnowDrift(modifier:Modifier, dx:Float, dy:Float = 0f) {
   val pathPoints = remember {
     listOf(
       listOf(Pt(11, 753),Pt(135, 630),Pt(358, 578),Pt(535, 623),Pt(663, 747),),

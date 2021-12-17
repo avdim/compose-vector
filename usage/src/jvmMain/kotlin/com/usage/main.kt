@@ -1,7 +1,12 @@
 package com.usage
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -29,7 +34,9 @@ fun main() {
         false
       }
     ) {
-      UsageInCommon()
+      Box(Modifier.fillMaxSize().background(Color.Black)) {
+        UsageInCommon()
+      }
     }
   }
 }

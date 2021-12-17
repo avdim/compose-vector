@@ -6,6 +6,6 @@ import lib.vector.GeneratedScope
 
 @Composable
 actual fun GeneratedLayer(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
-//  EditMode(modifier, lambda)
-  DisplayMode(modifier, lambda)
+  EditMode(modifier, lambda)
+//  DisplayMode(modifier, lambda)
 }

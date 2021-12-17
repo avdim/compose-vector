@@ -635,16 +635,16 @@ val Point.pt get() =
   }
 
 @Composable
-fun ColorPicker(currentColor: ULong, onChageColor: (ULong) -> Unit) {
+fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
   Column {
     TxtButton("Blue") {
-      onChageColor(Color.Blue.value)
+      onChangeColor(Color.Blue.value)
     }
     TxtButton("Red") {
-      onChageColor(Color.Red.value)
+      onChangeColor(Color.Red.value)
     }
     TxtButton("Yellow") {
-      onChageColor(Color.Yellow.value)
+      onChangeColor(Color.Yellow.value)
     }
   }
 }

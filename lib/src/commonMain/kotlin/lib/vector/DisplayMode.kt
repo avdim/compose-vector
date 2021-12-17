@@ -21,7 +21,7 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     val generatedScope = object : GeneratedScope {
       override fun mkPt(x: Float, y: Float): MakePt = MakePt { _, _ -> Pt(x, y) }
 
-      override fun drawCurve(color: ULong, points: List<Pt>, bezierRef: Map<Pt, BezierRef>) {
+      override fun drawCurve(color: ULong, points: List<Pt>, bezierRef: Map<Pt, BezierRef>, fillPath:Boolean) {
         if (points.isNotEmpty()) {
           drawPath(
             path = Path().apply {
@@ -36,7 +36,7 @@ fun DisplayMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               }
             },
             color = Color(color),
-            style = if (FILL_PATH) Fill else Stroke(width = 2f)
+            style = if (fillPath) Fill else Stroke(width = 2f)
           )
         }
       }

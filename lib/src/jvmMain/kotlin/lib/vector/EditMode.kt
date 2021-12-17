@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.Checkbox
 import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -44,7 +45,7 @@ const val MOVE_NEAREST_NEW_POINT = false
 
 sealed class DrawOptions {
   data class Edit(val namePrefix: String = "m") : DrawOptions()
-  data class Curve(val color: ULong = Color.Blue.value) : DrawOptions()
+  data class Curve(val color: ULong = Color.Blue.value, val fillPath:Boolean = false) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
 }
@@ -122,6 +123,9 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               ColorPicker(options.color) {
                 replaceChangeOptions { options.copy(color = it) }
               }
+              Checkbox(options.fillPath, onCheckedChange = { changedChecked->
+                replaceChangeOptions { options.copy(fillPath = changedChecked) }
+              })
             }
             is DrawOptions.Rect -> {
               ColorPicker(options.color) {
@@ -188,7 +192,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
           points = currentPoints.takeOrSmaller(1) +
             currentPoints.filterIndexed { i, _ -> temp.any { it.current == i } } +
             currentPoints.takeLastOrSmaller(1),
-          bezierRef = emptyMap()
+          bezierRef = emptyMap(),
+          fillPath = cs.options.fillPath
         )
       }
       is DrawOptions.Rect -> {
@@ -268,7 +273,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     (savedElements + listOfNotNull(currentElement)).forEach { e ->
       when (e) {
         is Element.Curve -> {
-          drawCurve(e.color, e.points.pts(mapIdToPoint), e.bezierRef.pt(mapIdToPoint))
+          drawCurve(e.color, e.points.pts(mapIdToPoint), e.bezierRef.pt(mapIdToPoint), e.fillPath)
         }
         is Element.Rectangle -> drawRect(e.color, e.start.pt(mapIdToPoint), e.end.pt(mapIdToPoint))
         is Element.Bitmap -> drawBitmap(e.topLeft.pt(mapIdToPoint), e.byteArray)

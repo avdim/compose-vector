@@ -91,8 +91,7 @@ fun UsageInCommon() {
   }
 //  CatBitmap()
 
-  GeneratedLayer(Modifier) {
-
+  DisplayMode(Modifier) {
     val h00 = animatedHead[0]
     val h01 = animatedHead[1]
     val h02 = animatedHead[2]
@@ -120,9 +119,40 @@ fun UsageInCommon() {
     val t44 by mkPt(animatedTail[7])
 
     val a = animatedPointsA
-    drawCurve(0xff00009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),)
+    drawCurve(0xff00009900000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(a[10] to BR(a[38], a[39]),a[11] to BR(a[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),a[15] to BR(a[45], null),),true)
     val b = animatedPointsB
-    drawCurve(0xff0000cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),)
+    drawCurve(0xff0000cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),true)
   }
 
+  repeat(20) {
+    SnowDrift(dx = Random.nextInt(-3000, 2000).toFloat())
+  }
+
+  GeneratedLayer(Modifier) {
+
+  }
+}
+
+const val SNOW_DRIFT_DY = -30f
+
+@Composable
+fun SnowDrift(modifier:Modifier = Modifier, dx:Float, dy:Float = 0f) {
+  val pathPoints = remember {
+    listOf(
+      listOf(Pt(11, 753),Pt(135, 630),Pt(358, 578),Pt(535, 623),Pt(663, 747),),
+      listOf(Pt(37, 749),Pt(110, 663),Pt(225, 617),Pt(378, 660),Pt(445, 750),),
+      listOf(Pt(97, 756),Pt(204, 623),Pt(359, 572),Pt(523, 630),Pt(647, 747),)
+    ).random()
+  }
+  val color: ULong = remember {
+    val baseGray = 180
+    val diffGray = (0..50).random()
+    val c = (baseGray + diffGray).toULong()
+
+    0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
+  }
+  val diffPoints = pathPoints.map { it.copy(x = it.x + dx, y = it.y + dy + SNOW_DRIFT_DY) }
+  DisplayMode(modifier) {
+    drawCurve(color, diffPoints, fillPath = true)
+  }
 }

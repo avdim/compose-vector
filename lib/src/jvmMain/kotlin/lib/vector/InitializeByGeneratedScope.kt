@@ -35,7 +35,7 @@ fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit): EditState {
       pt
     }
 
-    override fun drawCurve(color: ULong, points: List<Pt>, bezierRef: Map<Pt, BezierRef>) {
+    override fun drawCurve(color: ULong, points: List<Pt>, bezierRef: Map<Pt, BezierRef>, fillPath: Boolean) {
       generatedElements.add(
         Element.Curve(
           color = color,
@@ -49,7 +49,8 @@ fun initializeByGeneratedScope(lambda: GeneratedScope.() -> Unit): EditState {
                 )
               )
             }
-          }
+          },
+          fillPath = fillPath
         )
       )
     }

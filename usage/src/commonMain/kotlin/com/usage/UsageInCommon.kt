@@ -45,31 +45,38 @@ fun BackgroundHills() {
     val c = (180 + 60).toULong()
     0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
   }
-  var backgroundDiffX by remember { mutableStateOf(0f) }
+  val leftX = -3000f
+  val rightX = 2000f
+  val bottomY = 800f
+  val bottomLeft = Pt(leftX, bottomY)
+  val bottomRight = Pt(rightX, bottomY)
+  val pointsCount = 15
+  val stepWidth = (rightX - leftX) / 15
+  val speed = 1.3f
+  var curvePoints: List<Pt> by remember {
+    mutableStateOf(
+      List(pointsCount) {
+        Pt(leftX + stepWidth * it, 200f + Random.nextInt(0, 80))
+      }
+    )
+  }
   LaunchedEffect(Unit) {
     while (true) {
       withFrameNanos { it }
-      backgroundDiffX += 1.3f
-    }
-  }
-  val curvePoints = remember {
-    val leftX = -3000
-    val rightX = 2000
-    val bottomLeft = Pt(-3000, 800)
-    val bottomRight = Pt(2000, 800)
-    val pointsCount = 15
-    val stepWidth = (rightX - leftX) / 15
-    val points = List(pointsCount) {
-      Pt(leftX + stepWidth * it, 200 + Random.nextInt(0, 80))
-    }
-    buildList {
-      add(bottomLeft)
-      addAll(points)
-      add(bottomRight)
+      curvePoints = curvePoints
+        .map { Pt(it.x + speed, it.y) }
+        .toMutableList().apply {
+          indices.reversed().forEach { i->
+            if(this[i].x > rightX) {
+              val moveMe = removeAt(i)
+              add(0, Pt(leftX, moveMe.y))
+            }
+          }
+        }
     }
   }
   DisplayMode() {
-    drawCurve(color, curvePoints.map { it.copy(x = it.x + backgroundDiffX) }, emptyMap(), fillPath = true)
+    drawCurve(color, listOf(bottomLeft) + curvePoints + listOf(bottomRight), emptyMap(), fillPath = true)
   }
 }
 

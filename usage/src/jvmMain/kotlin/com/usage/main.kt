@@ -21,7 +21,7 @@ fun main() {
   application {
     Window(
       onCloseRequest = ::exitApplication,
-      state = rememberWindowState(width = 800.dp, height = 800.dp),
+      state = rememberWindowState(width = 800.dp, height = 750.dp),
       onKeyEvent = {
         GlobalScope.launch {
           globalKeyListener.emit(it.key)

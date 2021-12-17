@@ -124,8 +124,16 @@ fun UsageInCommon() {
     drawCurve(0xff0000cc00000000uL,listOf(h00,h01,h02,h03,h04,h05,h06,b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22],b[23],b[24],t25,t26,t27,t28,t29,t30,t31,h32,h33,h34,h35,h36,h37,h00,), mapOf(b[10] to BR(b[38], b[39]),b[11] to BR(b[40], null),h02 to BR(h41, null),h36 to BR(h42, h43),t27 to BR(null, t44),b[15] to BR(b[45], null),),true)
   }
 
+
+  var snowDiffX by remember { mutableStateOf(0f) }
+  LaunchedEffect(Unit) {
+    while(true) {
+      withFrameNanos { it }
+      snowDiffX += 3f
+    }
+  }
   repeat(20) {
-    SnowDrift(dx = Random.nextInt(-3000, 2000).toFloat())
+    SnowDrift(dx = snowDiffX + remember { Random.nextInt(-3000, 2000).toFloat() })
   }
 
   GeneratedLayer(Modifier) {

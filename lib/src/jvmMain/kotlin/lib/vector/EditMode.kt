@@ -40,7 +40,7 @@ import kotlin.random.nextUInt
 const val CURVE_PRECISION = 25f * 100f
 const val CLOSE_DISTANCE = 5.0
 const val SHOW_INTERCEPTIONS = false
-const val MOVE_NEAREST_BEZIER_REF = false
+const val MOVE_NEAREST_BEZIER_REF = true
 const val MOVE_NEAREST_NEW_POINT = false
 
 sealed class DrawOptions {

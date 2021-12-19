@@ -40,18 +40,12 @@ half4 main(float2 fragCoord) {
     r = r + 1.0;//next random
     float2 p = float2(iResolution.x*rnd(r + 0), iResolution.y*rnd(r + 1));
     float distance = length(fragCoord - p);
-    float pulse = 1.0 + 0.2*sin(rnd(r+3)*6 + iTime*(4 + 2*rnd(r+4)));
-    brightness = pulse * brightness + 1/distance/sqrt(distance);
-    float3 color = float3(rnd(r + 5), rnd(r+6), rnd(r+7));
+    float pulse = 1.0 + 0.35*sin(rnd(r+3)*100 + iTime*(4 + 2*rnd(r+4)));
+    brightness = pulse * 1/(0.0 + distance*distance);
+    float3 color = float3(0.4 + rnd(r + 5), 0.3 + rnd(r+6), 1.0 + rnd(r+7));
     result = result + color * brightness;
   }
-  
- 
-  
-  //float2 scaled = fragCoord/iResolution.xy;
-  //float brightness = 1.0 + 0.3*sin(iTime*5);
-  //float4 clr = float4(1, rnd(r+3), rnd(r+4), rnd(r+5));
-  return half4(0.12 * result, 1.0);
+  return half4(3.0 * result, 1.0);
 }
 """
 

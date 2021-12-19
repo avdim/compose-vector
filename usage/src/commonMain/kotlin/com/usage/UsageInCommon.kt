@@ -5,6 +5,8 @@ package com.usage
 import lib.vector.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import lib.vector.Pt
 import kotlin.random.Random
 
@@ -15,6 +17,7 @@ const val DRAW_CHRISTMAS_TREE = true
 @OptIn(ExperimentalStdlibApi::class)
 @Composable
 fun UsageInCommon(modifier: Modifier = Modifier) {
+  ComposeShader(Size(800f, 400f))
   if (DRAW_SNOW_DRIFT) {
     BackgroundHills()
   }

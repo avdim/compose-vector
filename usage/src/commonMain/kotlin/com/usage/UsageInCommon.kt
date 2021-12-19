@@ -41,7 +41,7 @@ fun UsageInCommon(modifier: Modifier = Modifier) {
 fun ManyChristmasTrees() {
   val leftX = -3000f
   val rightX = 2000f
-  val pointsCount = 20
+  val pointsCount = 40
   val stepWidth = (rightX - leftX) / pointsCount
   val speed = 1.3f
 
@@ -54,7 +54,7 @@ fun ManyChristmasTrees() {
   var trees: List<TreeData> by remember {
     mutableStateOf(
       List(pointsCount) {
-        val x = leftX + it * stepWidth
+        val x = leftX + it * stepWidth + Random.nextFloat() * stepWidth/3
         val y = Random.nextInt(0, 50).toFloat()
         val baseGreen = 0x99
         val diffGray = (0..25).random()

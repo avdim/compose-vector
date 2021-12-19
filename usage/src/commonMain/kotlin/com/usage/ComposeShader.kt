@@ -18,23 +18,42 @@ import java.nio.ByteOrder
 
 @Composable
  fun ComposeShader(size:Size) {
-  val sksl = """
-            uniform float time;
+
+  size.height
+  val sksl =
+"""
+uniform float iTime;
+float2 iResolution = float2(${size.width}, ${size.height});
             
-            float f(vec3 p) {
-                p.z += 10. + time;
-                float a = p.z * .1;
-                p.xy *= mat2(cos(a), sin(a), -sin(a), cos(a));
-                return .1 - length(cos(p.xy) + sin(p.yz));
-            }
-            
-            half4 main(vec2 fragcoord) { 
-                vec3 d = .5 - fragcoord.xy1 / 500;
-                vec3 p=vec3(0);
-                for (int i = 0; i < 32; i++) p += f(p) * d;
-                return ((sin(p) + vec3(2, 5, 9)) / length(p)).xyz1;
-            }
-        """
+// The iResolution uniform is always present and provides
+// the canvas size in pixels. 
+
+float rnd (vec2 uv) {
+ return fract(sin(dot(uv.xy , vec2(12.9898,78.233))) * 43758.5453);
+}
+
+half4 main(float2 fragCoord) {
+  vec2 r = vec2(0,0);
+  float brightness = 0;
+  float3 result = float3(0,0,0);
+  for (int i = 0; i < 30; i++) {
+    r = r + 1.0;//next random
+    float2 p = float2(iResolution.x*rnd(r + 0), iResolution.y*rnd(r + 1));
+    float distance = length(fragCoord - p);
+    float pulse = 1.0 + 0.2*sin(rnd(r+3)*6 + iTime*(4 + 2*rnd(r+4)));
+    brightness = pulse * brightness + 1/distance/sqrt(distance);
+    float3 color = float3(rnd(r + 5), rnd(r+6), rnd(r+7));
+    result = result + color * brightness;
+  }
+  
+ 
+  
+  //float2 scaled = fragCoord/iResolution.xy;
+  //float brightness = 1.0 + 0.3*sin(iTime*5);
+  //float4 clr = float4(1, rnd(r+3), rnd(r+4), rnd(r+5));
+  return half4(0.12 * result, 1.0);
+}
+"""
 
   val runtimeEffect = RuntimeEffect.makeForShader(sksl)
   val byteBuffer = remember { ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN) }
@@ -60,7 +79,7 @@ import java.nio.ByteOrder
     while (true) {
       withFrameNanos { frameTimeNanos ->
         val nanosPassed = frameTimeNanos - previousNanos
-        val delta = nanosPassed / 100000000f
+        val delta = nanosPassed / 1_000_000_000f
         if (previousNanos > 0.0f) {
           timeUniform -= delta
         }

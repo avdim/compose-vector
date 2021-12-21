@@ -56,10 +56,11 @@ half4 main(float2 fragCoord) {
     result = result + color * brightness;
   }
   
+  float ANIMATION_SPEED1 = 3.0;
   float bottomY = 400;
-  float yellowY = 440 + 40*sin(fx*0.05 + iTime*0.9 + 3.0) + 40*sin(-fx*0.03 + iTime*0.4 + 2.0);
-  float greenY =  300 + 40*sin(fx*0.02 - iTime*0.3 + 2.0)  + 40*sin(fx*0.01 - iTime*0.7 + 1.1);
-  float blueY =   200 + 50*sin(fx*0.04 + iTime*0.5 + 2.5)  + 50*sin(fx*0.02 + iTime*0.5 + 0.3);
+  float yellowY = 440 + 40*sin(fx*0.05 + iTime*0.9*ANIMATION_SPEED1 + 3.0) + 40*sin(-fx*0.03 + iTime*0.4*ANIMATION_SPEED1 + 2.0);
+  float greenY =  300 + 40*sin(fx*0.02 - iTime*0.3*ANIMATION_SPEED1 + 2.0)  + 40*sin(fx*0.01 - iTime*0.7*ANIMATION_SPEED1 + 1.1);
+  float blueY =   200 + 50*sin(fx*0.04 + iTime*0.5*ANIMATION_SPEED1 + 2.5)  + 50*sin(fx*0.02 + iTime*0.5*ANIMATION_SPEED1 + 0.3);
   
   for(int i = 1; i < 8; i++) {
     r = r + 1.0;//next random

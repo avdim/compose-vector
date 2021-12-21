@@ -56,7 +56,7 @@ fun ManyChristmasTrees() {
       List(pointsCount) {
         val x = leftX + it * stepWidth + Random.nextFloat() * stepWidth/3
         val y = Random.nextInt(0, 50).toFloat() + 80
-        val baseGreen = 0x99
+        val baseGreen = 0x55
         val diffGray = (0..25).random()
         val c = (baseGreen + diffGray).toULong()
         val color: ULong = 0xff00000000000000uL + (c shl 40)
@@ -179,8 +179,8 @@ fun SnowDrifts() {
           listOf(Pt(65, 755), Pt(166, 641), Pt(258, 629), Pt(342, 575), Pt(431, 635), Pt(495, 755)),
         ).random()
 
-        val baseGray = 180
-        val diffGray = (0..50).random()
+        val baseGray = 195
+        val diffGray = (0..25).random()
         val c = (baseGray + diffGray).toULong()
         val color: ULong = 0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
         SnowDriftData(x, pathPoints, color)

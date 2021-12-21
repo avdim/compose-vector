@@ -9,6 +9,11 @@ Unfortunately have problems with MacOS high screens. I will try to fix it.
 For discusssions: https://github.com/avdim/compose-vector/discussions/1
 
 
-### Дополнительно
+### Addition
+This project is very early and may have a lot of bugs. 
+I want to know we interest of community.
+Please start repo If you like it and what to have IDEA plugin with this Compose-Vector editor.
+
 Этот проект ещё сырой, в идеале Я хочу оформить его как плагин к IDEA.  
-Про шейдеры тут можно почитать //https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html
+Вот видео на русском про задумку: https://www.youtube.com/watch?v=2yJWTw5UVK0  
+Про шейдеры тут можно почитать //https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html  

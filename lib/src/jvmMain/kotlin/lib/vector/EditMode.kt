@@ -44,7 +44,7 @@ const val MOVE_NEAREST_BEZIER_REF = true
 const val MOVE_NEAREST_NEW_POINT = false
 
 sealed class DrawOptions {
-  data class Edit(val namePrefix: String = "m") : DrawOptions()
+  data class Dot(val namePrefix: String = "m") : DrawOptions()
   data class Curve(val color: ULong = Color.Blue.value, val fillPath:Boolean = false) : DrawOptions()
   data class Rect(val color: ULong = Color.Yellow.value) : DrawOptions()
   data class Img(val image: ImageBitmap? = null) : DrawOptions()
@@ -63,14 +63,14 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   var controllers by remember {
     mutableStateOf(
       listOf(
-        ControllerState("Edit", DrawOptions.Edit()),
+        ControllerState("Dot", DrawOptions.Dot()),
         ControllerState("Curve", DrawOptions.Curve()),
         ControllerState("Rectangle", DrawOptions.Rect()),
         ControllerState("Image", DrawOptions.Img()),
       )
     )
   }
-  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Edit } ?: 0) }
+  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Dot } ?: 0) }
   val controllerState: ControllerState by derivedStateOf { controllers[selectedControllerIndex] }
   fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
@@ -148,7 +148,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
                 )
               }
             }
-            is DrawOptions.Edit -> {
+            is DrawOptions.Dot -> {
+              Row {
+                Text("list prefix:")
+              }
               TextField(options.namePrefix, onValueChange = {
                 replaceChangeOptions{ options.copy(namePrefix = it) }
               })
@@ -163,7 +166,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   val currentElement: Element? by derivedStateOf {
     val cs = controllerState
     when (cs.options) {
-      is DrawOptions.Edit -> null
+      is DrawOptions.Dot -> null
       is DrawOptions.Curve -> {
         val fullLength = currentPoints.windowed(2).sumOf { (a: Id, b: Id) -> a.pt(mapIdToPoint) distance b.pt(mapIdToPoint) }
         val threshold = fullLength / CURVE_PRECISION
@@ -282,7 +285,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
 
   val options = controllerState.options
-  if (options is DrawOptions.Edit) {
+  if (options is DrawOptions.Dot) {
     //Selection
     var currentSelectedId: Id? by remember { mutableStateOf(null) }
     var previousSelectedId: Id? by remember { mutableStateOf(null) }
@@ -590,7 +593,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       if(MOVE_NEAREST_BEZIER_REF) {
         bezierPoints.forEach {
           drawLine(
-            Color.Yellow,
+            Color.Gray,
             start = it.originPt(mapIdToPoint).offset,
             end = it.refPt.offset,
             pathEffect = PathEffect.dashPathEffect(floatArrayOf(2f, 2f))

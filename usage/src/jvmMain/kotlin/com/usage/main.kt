@@ -34,7 +34,7 @@ fun main() {
         false
       }
     ) {
-      Box(Modifier.fillMaxSize().background(Color.Black)) {
+      Box(Modifier.fillMaxSize()) {
         UsageInCommon()
       }
     }

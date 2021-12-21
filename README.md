@@ -1,4 +1,4 @@
-### Compose Desktop Vector Graphics sample
+### Compose Desktop vector graphics and animation editor with codegeneration
 To launch:  
 `./run.sh` or `./gradlew happy-new-year:run`  
 

@@ -2,11 +2,16 @@
 
 package com.usage
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
 import lib.vector.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import lib.vector.Pt
 import kotlin.random.Random
 
@@ -32,8 +37,53 @@ fun UsageInCommon(modifier: Modifier = Modifier) {
     SnowDrifts()
   }
 
+  Snow()
+
   GeneratedLayer(modifier) {
 
+  }
+}
+
+@Composable
+fun Snow() {
+  val leftX = -10f
+  val topY = -10f
+  val speedX = 2f
+  val speedY = 5f
+  val width = 800 + 20
+  val height = 800 + 20
+  val rightX = leftX + width
+  val bottomY = topY + height
+
+  data class SnowFlake(val size: Float, val x: Float, val y: Float)
+
+  var snowFlakes:List<SnowFlake> by remember {
+    mutableStateOf(
+      List(100) {
+        SnowFlake(3f + 2f * Random.nextFloat(), Random.nextFloat() * width, Random.nextFloat() * height)
+      }
+    )
+  }
+  LaunchedEffect(Unit) {
+    while (true) {
+      withFrameNanos { it }
+      snowFlakes = snowFlakes
+        .map { it.copy(x = it.x + speedX, y = it.y + speedY) }
+        .toMutableList().apply {
+          indices.reversed().forEach { i ->
+            if (this[i].x > rightX || this[i].y > bottomY) {
+              val moveMe = removeAt(i)
+              add(moveMe.copy(x = leftX, y = topY))
+            }
+          }
+        }
+    }
+  }
+
+  Canvas(Modifier.wrapContentSize(Alignment.Center).fillMaxSize()) {
+    snowFlakes.forEach {
+      drawCircle(Color.White, it.size, Offset(it.x, it.y))
+    }
   }
 }
 

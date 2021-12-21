@@ -1,4 +1,4 @@
-### Compose Vector Graphics sample
+### Compose Desktop Vector Graphics sample
 To launch:  
 `./run.sh` or `./gradlew happy-new-year:run`  
 

@@ -6,4 +6,4 @@ https://user-images.githubusercontent.com/2170973/146974854-e423e072-f9eb-4dd7-8
 
 Unfortunately have problems with MacOS high screens. I will try to fix it. 
 
-
+For discusssions: https://github.com/avdim/compose-vector/discussions/1

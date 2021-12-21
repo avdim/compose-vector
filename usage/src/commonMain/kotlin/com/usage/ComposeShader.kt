@@ -27,12 +27,19 @@ float2 iResolution = float2(${size.width}, ${size.height});
             
 // The iResolution uniform is always present and provides
 // the canvas size in pixels. 
+// The iResolution uniform is always present and provides
+// the canvas size in pixels. 
+
+// The iResolution uniform is always present and provides
+// the canvas size in pixels. 
 
 float rnd (vec2 uv) {
  return fract(sin(dot(uv.xy , vec2(12.9898,78.233))) * 43758.5453);
 }
 
 half4 main(float2 fragCoord) {
+  float fx = fragCoord.x;
+  float fy = fragCoord.y;
   vec2 r = vec2(0,0);//random seed
   float brightness = 0;
   float3 result = float3(0,0,0);
@@ -49,11 +56,29 @@ half4 main(float2 fragCoord) {
     result = result + color * brightness;
   }
   
-//  float d = length(fragCoord - float2(0,0));
-//  float3 northenLightColor = float3(1.0,1.0,1.0)/d;
-//  result = result + northenLightColor;
+  float bottomY = 400;
+  float greenY = 300;
+  float blueY = 200;
+  
+  for(int i = 1; i < 8; i++) {
+    r = r + 1.0;//next random
+    float power = 1.5*(1.0 + rnd(r+10));
+    float2 pt = float2(iResolution.x*rnd(r+11),bottomY);
+    float dy = (pt.y - fragCoord.y);
+    dy = dy / (1 + sign(dy));
+    float dx = length(fragCoord.x - pt.x + 10*sin(fy*0.04 + iTime*(1+2*rnd(r+9))));
+    
+    float3 yellow = float3(0.9, 1.0, 0.0) * (1 - length(bottomY - fy)/bottomY);
+    float3 green = float3(0.1, 1.0, 0.0) * (1 - length(greenY - fy)/greenY);
+    float3 blue =  float3(0.0, 0.0, 1.0) * (1 - length(blueY - fy)/blueY);
+    float3 northenLightColor = (yellow+green+blue)/(0.1 + sqrt(dy))/(2.0 + sqrt(dx));
+    northenLightColor = northenLightColor * power;
+    result = result + northenLightColor;
+  }
+  
   return half4(3.0 * result, 1.0);
 }
+
 """
 
   val runtimeEffect = RuntimeEffect.makeForShader(sksl)

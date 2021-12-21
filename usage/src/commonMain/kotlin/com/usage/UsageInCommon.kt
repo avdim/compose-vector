@@ -55,7 +55,7 @@ fun ManyChristmasTrees() {
     mutableStateOf(
       List(pointsCount) {
         val x = leftX + it * stepWidth + Random.nextFloat() * stepWidth/3
-        val y = Random.nextInt(0, 50).toFloat()
+        val y = Random.nextInt(0, 50).toFloat() + 80
         val baseGreen = 0x99
         val diffGray = (0..25).random()
         val c = (baseGreen + diffGray).toULong()
@@ -116,6 +116,7 @@ fun BackgroundHills() {
     val c = (180 + 60).toULong()
     0xff00000000000000uL + (c shl 32) + (c shl 40) + (c shl 48)
   }
+  val middleY = 300f
   val leftX = -3000f
   val rightX = 2000f
   val bottomY = 800f
@@ -127,7 +128,7 @@ fun BackgroundHills() {
   var curvePoints: List<Pt> by remember {
     mutableStateOf(
       List(pointsCount) {
-        Pt(leftX + stepWidth * it, 200f + Random.nextInt(0, 80))
+        Pt(leftX + stepWidth * it, middleY + Random.nextInt(0, 80))
       }
     )
   }

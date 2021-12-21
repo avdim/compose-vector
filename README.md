@@ -16,4 +16,5 @@ Please start repo If you like it and what to have IDEA plugin with this Compose-
 
 Этот проект ещё сырой, в идеале Я хочу оформить его как плагин к IDEA.  
 Вот видео на русском про задумку: https://www.youtube.com/watch?v=2yJWTw5UVK0  
-Про шейдеры тут можно почитать //https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html  
+Вот тут можно поиграть с шейдерами https://shaders.skia.org/?id=%40iMouse  
+Про шейдеры тут можно почитать https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html  

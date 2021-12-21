@@ -13,8 +13,9 @@ import org.jetbrains.skia.RuntimeEffect
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-//https://github.com/Mishkun/ataman-intellij
-//https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html
+// https://github.com/Mishkun/ataman-intellij
+// https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html
+// https://shaders.skia.org/?id=%40iMouse
 
 @Composable
 fun StarsAndSky(size:Size) {

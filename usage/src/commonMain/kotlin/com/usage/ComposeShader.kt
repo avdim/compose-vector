@@ -58,13 +58,13 @@ half4 main(float2 fragCoord) {
   
   float ANIMATION_SPEED1 = 3.0;
   float bottomY = 400;
-  float yellowY = 440 + 40*sin(fx*0.05 + iTime*0.9*ANIMATION_SPEED1 + 3.0) + 40*sin(-fx*0.03 + iTime*0.4*ANIMATION_SPEED1 + 2.0);
-  float greenY =  300 + 40*sin(fx*0.02 - iTime*0.3*ANIMATION_SPEED1 + 2.0)  + 40*sin(fx*0.01 - iTime*0.7*ANIMATION_SPEED1 + 1.1);
-  float blueY =   200 + 50*sin(fx*0.04 + iTime*0.5*ANIMATION_SPEED1 + 2.5)  + 50*sin(fx*0.02 + iTime*0.5*ANIMATION_SPEED1 + 0.3);
+  float yellowY = 360 + 40*sin(fx*0.05 + iTime*0.9*ANIMATION_SPEED1 + 3.0) + 40*sin(-fx*0.03 + iTime*0.4*ANIMATION_SPEED1 + 2.0);
+  float greenY =  300 + 40*sin(-fx*0.02 - iTime*0.3*ANIMATION_SPEED1 + 2.0)  + 40*sin(fx*0.01 - iTime*0.7*ANIMATION_SPEED1 + 1.1);
+  float blueY =   200 + 50*sin(-fx*0.04 + iTime*0.5*ANIMATION_SPEED1 + 2.5)  + 50*sin(fx*0.02 + iTime*0.5*ANIMATION_SPEED1 + 0.3);
   
   for(int i = 1; i < 8; i++) {
     r = r + 1.0;//next random
-    float power = 1.5*(1.0 + rnd(r+10));
+    float power = 0.4*(1.0 + rnd(r+10));
     float2 pt = float2(iResolution.x*rnd(r+11),bottomY);
     float dy = (pt.y - fragCoord.y);
     dy = dy / (1 + sign(dy));
@@ -73,7 +73,7 @@ half4 main(float2 fragCoord) {
     float3 yellow = float3(0.7, 1.0, 0.0) * (1 - length(yellowY - fy)/yellowY);
     float3 green = float3(0.0, 1.0, 0.0) * (1 - length(greenY - fy)/greenY);
     float3 blue =  float3(0.0, 0.0, 1.0) * (1 - length(blueY - fy)/blueY);
-    float3 northenLightColor = (yellow+green+blue)/(0.1 + sqrt(dy))/(2.0 + sqrt(dx));
+    float3 northenLightColor = (yellow+green+blue)/(0.1 + sqrt(dy))/(2.0 + pow(dx, 0.25));
     northenLightColor = northenLightColor * power;
     result = result + northenLightColor;
   }

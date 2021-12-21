@@ -17,7 +17,7 @@ import java.nio.ByteOrder
 //https://www.pushing-pixels.org/2021/09/22/skia-shaders-in-compose-desktop.html
 
 @Composable
- fun ComposeShader(size:Size) {
+fun StarsAndSky(size:Size) {
 
   size.height
   val sksl =

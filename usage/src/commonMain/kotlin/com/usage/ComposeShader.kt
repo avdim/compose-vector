@@ -33,18 +33,25 @@ float rnd (vec2 uv) {
 }
 
 half4 main(float2 fragCoord) {
-  vec2 r = vec2(0,0);
+  vec2 r = vec2(0,0);//random seed
   float brightness = 0;
   float3 result = float3(0,0,0);
   for (int i = 0; i < 30; i++) {
     r = r + 1.0;//next random
     float2 p = float2(iResolution.x*rnd(r + 0), iResolution.y*rnd(r + 1));
+    float distanceX = length(fragCoord.x - p.x);
+    float distanceY = length(fragCoord.y - p.y);
     float distance = length(fragCoord - p);
-    float pulse = 1.0 + 0.35*sin(rnd(r+3)*100 + iTime*(4 + 2*rnd(r+4)));
-    brightness = pulse * 1/(0.0 + distance*distance);
+    float pulse = 1.0 + 0.45*sin(rnd(r+3)*100 + iTime*(4 + 2*rnd(r+4)));
+    brightness = 2.1 * pulse * 1/((distanceX+0.1)*(distanceY+0.1)*distance);
+    
     float3 color = float3(0.4 + rnd(r + 5), 0.3 + rnd(r+6), 1.0 + rnd(r+7));
     result = result + color * brightness;
   }
+  
+//  float d = length(fragCoord - float2(0,0));
+//  float3 northenLightColor = float3(1.0,1.0,1.0)/d;
+//  result = result + northenLightColor;
   return half4(3.0 * result, 1.0);
 }
 """

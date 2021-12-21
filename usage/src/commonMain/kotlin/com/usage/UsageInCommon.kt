@@ -23,33 +23,21 @@ const val DRAW_CHRISTMAS_TREE = true
 @Composable
 fun UsageInCommon(modifier: Modifier = Modifier) {
   ComposeShader(Size(800f, 400f))
-  if (DRAW_SNOW_DRIFT) {
-    BackgroundHills()
-  }
-
-  if (DRAW_CHRISTMAS_TREE) {
-    ManyChristmasTrees()
-  }
-
+  BackgroundHills()
+  ManyChristmasTrees()
   Cat(modifier)
-
-  if (DRAW_SNOW_DRIFT) {
-    SnowDrifts()
-  }
-
-  Snow()
-
-  GeneratedLayer(modifier) {
-
-  }
+  Snow(1.5f, 2f, 50)
+  SnowDrifts()
+  Snow(1.0f, 1.0f, 80)
+//  GeneratedLayer(modifier) {}
 }
 
 @Composable
-fun Snow() {
+fun Snow(speed:Float, snowFlakeSize:Float = 1.0f, count:Int) {
   val leftX = -10f
   val topY = -10f
-  val speedX = 2f
-  val speedY = 5f
+  val speedX = 0.7f*speed
+  val speedY = 2.2f*speed
   val width = 800 + 20
   val height = 800 + 20
   val rightX = leftX + width
@@ -59,8 +47,8 @@ fun Snow() {
 
   var snowFlakes:List<SnowFlake> by remember {
     mutableStateOf(
-      List(100) {
-        SnowFlake(3f + 2f * Random.nextFloat(), Random.nextFloat() * width, Random.nextFloat() * height)
+      List(count) {
+        SnowFlake(snowFlakeSize*(1f + 1f * Random.nextFloat()), Random.nextFloat() * width, Random.nextFloat() * height)
       }
     )
   }
@@ -73,7 +61,12 @@ fun Snow() {
           indices.reversed().forEach { i ->
             if (this[i].x > rightX || this[i].y > bottomY) {
               val moveMe = removeAt(i)
-              add(moveMe.copy(x = leftX, y = topY))
+              if(Random.nextBoolean()) {
+                add(moveMe.copy(x = leftX, y = topY + height * Random.nextFloat()))
+              } else {
+                add(moveMe.copy(x = leftX + width * Random.nextFloat(), y = topY))
+              }
+
             }
           }
         }

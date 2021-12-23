@@ -26,8 +26,6 @@ kotlin {
         implementation(project(":clipboard"))
         implementation(compose.desktop.currentOs)
         implementation("com.squareup:kotlinpoet:1.10.2")
-        implementation("org.pushing-pixels:radiance-animation:${RADIANCE_VERSION}")
-        implementation("org.pushing-pixels:radiance-animation-ktx:${RADIANCE_VERSION}")
       }
     }
     named("jvmTest") {

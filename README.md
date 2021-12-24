@@ -6,7 +6,7 @@ https://user-images.githubusercontent.com/2170973/146974854-e423e072-f9eb-4dd7-8
 
 ### Addition
 Хочу сделать редактор 2D растровой и векторной графики.  Причём вместо SVG или других форматов - будет кодогенерация на Kotlin.  
-Этот проект ещё сырой, в идеале Я хочу оформить его как плагин к IDEA.  
+Этот проект ещё сырой, в идеале Я хочу оформить его как плагин к Intellij IDEA.  
 Вот видео на русском про задумку: https://www.youtube.com/watch?v=dB9yjUBq8oQ  
 
 This project is very early and may have a lot of bugs. 

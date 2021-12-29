@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.singleWindowApplication
 
+//https://github.com/JetBrains/compose-jb/issues/1559
 fun main() = singleWindowApplication {
   Box(modifier = Modifier.fillMaxSize()) {
     Box(
@@ -14,7 +15,7 @@ fun main() = singleWindowApplication {
         .scale(0.95f)
         .offset(200.dp, 20.dp)
         .size(100.dp)
-        .background(Color.LightGray)
+        .background(Color.Green)
     )
     Box(
       modifier = Modifier
@@ -22,7 +23,7 @@ fun main() = singleWindowApplication {
         .scale(0.95f)
         .offset(200.dp, 20.dp)
         .size(100.dp)
-        .background(Color.LightGray)
+        .background(Color.Red)
     )
   }
 }

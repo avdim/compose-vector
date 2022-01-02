@@ -1,4 +1,4 @@
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.junit.Test
 import javax.script.ScriptContext
 import kotlin.coroutines.CoroutineContext
@@ -21,7 +21,6 @@ class BitSortTest {
       }
       val inputCopy = input.copyOf()
       val t1 = measureNanoTime {
-//        quickSort(inputCopy)
         inputCopy.sort()
       }.also {
         println("quickSort: $it")
@@ -40,7 +39,7 @@ class BitSortTest {
   }
 
   fun bitSort(arr: Array<Int>) {
-    runBlocking {
+    runBlocking(context = Dispatchers.Default) {
       var blocks = BLOCKS
       fun blockSize(): Int {
         val result = arr.size / blocks
@@ -70,18 +69,26 @@ class BitSortTest {
           insert++
         }
       }
-      repeat(blocks) { i ->
-        arr.sort(i * blockSize(), (i + 1) * blockSize())
+      coroutineScope {
+        repeat(blocks) { i ->
+          launch {
+            arr.sort(i * blockSize(), (i + 1) * blockSize())
+          }
 //      sort(i * blockSize(), (i + 1) * blockSize())
+        }
       }
       while (blocks > 1) {
-        blocks /= 2
-        repeat(blocks) { i ->
-          val size = blockSize()
-          val begin = i * size
-          val middle = i * size + size / 2
-          val end = (i + 1) * size
-          merge(begin, middle, middle, end)
+        coroutineScope {
+          blocks /= 2
+          repeat(blocks) { i ->
+            val size = blockSize()
+            val begin = i * size
+            val middle = i * size + size / 2
+            val end = (i + 1) * size
+            launch {
+              merge(begin, middle, middle, end)
+            }
+          }
         }
       }
     }

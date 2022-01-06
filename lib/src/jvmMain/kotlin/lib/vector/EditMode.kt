@@ -12,7 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.awtEvent
+//import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
@@ -235,7 +235,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     modifier = modifier.pointerInput(Unit) {
       while (true) {
         val event = awaitPointerEventScope { awaitPointerEvent() }
-        val point = event.awtEvent.point
+        val point = event.mouseEvent?.point ?: continue
         if (event.buttons.areAnyPressed || event.changes.lastOrNull()?.type == PointerType.Touch) {
           val previousPoints: List<Id> = currentPoints
           if (previousPoints.isEmpty()) {

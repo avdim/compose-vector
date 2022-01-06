@@ -1,2 +1,2 @@
 #!/bin/bash
-./gradlew usage:run --no-daemon #--offline
+./gradlew usage:run --no-daemon --offline

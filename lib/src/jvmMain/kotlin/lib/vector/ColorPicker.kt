@@ -81,7 +81,7 @@ fun OpenColorPicker(initColor: ULong, onSelect: (ULong) -> Unit) {
           }
         }
       }
-      val BAND_WIDTH = 20
+      val BAND_WIDTH = 40
       Canvas(Modifier.size(BAND_WIDTH.dp, 256.dp).pointerInput(Unit) {
         awaitPointerEventScope {
           while (true) {

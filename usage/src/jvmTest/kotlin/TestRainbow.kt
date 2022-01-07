@@ -1,9 +1,9 @@
 import androidx.compose.ui.graphics.Color
 import com.usage.runSimpleComposableWindow
-import lib.vector.OpenColorPicker
+import lib.vector.ColorPallet
 
 fun main() {
   runSimpleComposableWindow() {
-    OpenColorPicker(initColor = Color.Red.value) {  }
+    ColorPallet(initColor = Color.Red.value) {  }
   }
 }

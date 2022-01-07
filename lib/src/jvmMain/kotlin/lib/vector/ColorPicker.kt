@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,12 +37,12 @@ fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
   }
   if (dialogOpen) {
     Dialog(
-      state = DialogState(width = 400.dp, height = 400.dp, position = WindowPosition(Alignment.TopStart)),
+      state = DialogState(width = 500.dp, height = 500.dp, position = WindowPosition(Alignment.TopStart)),
       onCloseRequest = {
         dialogOpen = false
       }
     ) {
-      OpenColorPicker(currentColor) {
+      ColorPallet(currentColor) {
         select(it)
       }
     }
@@ -49,16 +50,31 @@ fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
 }
 
 @Composable
-fun OpenColorPicker(initColor: ULong, onSelect: (ULong) -> Unit) {
+fun ColorPallet(initColor: ULong, onSelect: (ULong) -> Unit) {
   Column {
+    Row {
+      listOf(Color.Red, Color.Green, Color.Blue, Color.Black, Color.Gray, Color.Yellow, Color.Cyan).forEach {
+        val width = 40f
+        val height = 40f
+        Canvas(Modifier.size(width.dp, height.dp).clickable {
+          onSelect(it.value)
+        }) {
+          drawRect(color = it, size = Size(width, height))
+        }
+      }
+    }
+    Divider(Modifier.size(5.dp))
     var red: Int by remember { mutableStateOf((Color(initColor).red * 0xFF).toInt()) }
     var green: Int by remember { mutableStateOf((Color(initColor).green * 0xFF).toInt()) }
     var blue: Int by remember { mutableStateOf((Color(initColor).blue * 0xFF).toInt()) }
     val currentColor: ULong by derivedStateOf { Color(red, green, blue).value }
 
-    Canvas(Modifier.size(50.dp, 50.dp)) {
+    Canvas(Modifier.size(50.dp, 50.dp).clickable {
+      onSelect(currentColor)
+    }) {
       drawRect(Color(currentColor), size = Size(50f, 50f))
     }
+    Divider(Modifier.size(5.dp))
     Row {
       Canvas(Modifier.size(256.dp, 256.dp).pointerInput(Unit) {
         awaitPointerEventScope {

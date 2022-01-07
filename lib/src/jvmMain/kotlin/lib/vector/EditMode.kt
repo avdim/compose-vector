@@ -654,15 +654,32 @@ val Point.pt get() =
 
 @Composable
 fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
-  Column {
-    TxtButton("Blue") {
-      onChangeColor(Color.Blue.value)
+  var dialogOpen by remember { mutableStateOf(false) }
+  Row(modifier = Modifier.clickable {
+    dialogOpen = !dialogOpen
+  }) {
+    Canvas(modifier = Modifier.size(30.dp)) {
+      drawRect(color = Color(currentColor))
     }
-    TxtButton("Red") {
-      onChangeColor(Color.Red.value)
-    }
-    TxtButton("Yellow") {
-      onChangeColor(Color.Yellow.value)
+    Text("color")
+  }
+  if (dialogOpen) {
+    Window(
+      state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
+      onCloseRequest = {
+        dialogOpen = false
+      }) {
+      Column {
+        TxtButton("Blue") {
+          onChangeColor(Color.Blue.value)
+        }
+        TxtButton("Red") {
+          onChangeColor(Color.Red.value)
+        }
+        TxtButton("Yellow") {
+          onChangeColor(Color.Yellow.value)
+        }
+      }
     }
   }
 }

@@ -652,38 +652,6 @@ val Point.pt get() =
     Pt(x.toFloat(), y.toFloat())
   }
 
-@Composable
-fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
-  var dialogOpen by remember { mutableStateOf(false) }
-  Row(modifier = Modifier.clickable {
-    dialogOpen = !dialogOpen
-  }) {
-    Canvas(modifier = Modifier.size(30.dp)) {
-      drawRect(color = Color(currentColor))
-    }
-    Text("color")
-  }
-  if (dialogOpen) {
-    Window(
-      state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
-      onCloseRequest = {
-        dialogOpen = false
-      }) {
-      Column {
-        TxtButton("Blue") {
-          onChangeColor(Color.Blue.value)
-        }
-        TxtButton("Red") {
-          onChangeColor(Color.Red.value)
-        }
-        TxtButton("Yellow") {
-          onChangeColor(Color.Yellow.value)
-        }
-      }
-    }
-  }
-}
-
 inline fun Id.pt(map: Map<Id, Pt>): Pt = map[this]!!
 inline fun Collection<Id>.pts(map: Map<Id, Pt>): List<Pt> = map { it.pt(map) }
 inline fun BezierRefEdit.pt(map: Map<Id, Pt>): BezierRef = BR(startRef = startRef?.pt(map), endRef = endRef?.pt(map))

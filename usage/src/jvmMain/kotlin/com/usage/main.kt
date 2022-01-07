@@ -1,25 +1,19 @@
 package com.usage
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.usage.UsageInCommon
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import lib.vector.OpenColorPicker
 import lib.vector.globalKeyListener
 
 @ExperimentalFoundationApi

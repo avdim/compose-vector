@@ -33,6 +33,8 @@ import lib.vector.intercept.nearestBezierPoint
 import lib.vector.utils.indexOfFirstOrNull
 import lib.vector.utils.toByteArray
 import java.awt.Point
+import java.awt.event.InputEvent
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import kotlin.random.Random
 import kotlin.random.nextUInt
@@ -70,7 +72,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
       )
     )
   }
-  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Dot } ?: 0) }
+  var selectedControllerIndex by remember { mutableStateOf(controllers.indexOfFirstOrNull { it.options is DrawOptions.Curve } ?: 0) }
   val controllerState: ControllerState by derivedStateOf { controllers[selectedControllerIndex] }
   fun replaceChangeOptions(lambda: () -> DrawOptions) {
     controllers = controllers.toMutableList().also {
@@ -232,11 +234,16 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
 
   DisplayMode(
-    modifier = modifier.pointerInput(Unit) {
+    modifier = modifier.pointerInput2(Unit) {
       while (true) {
-        val event = awaitPointerEventScope { awaitPointerEvent() }
+        val event = awaitPointerEventScope {
+          awaitPointerEvent()
+        }
         val point = event.mouseEvent?.point ?: continue
-        if (event.buttons.areAnyPressed || event.changes.lastOrNull()?.type == PointerType.Touch) {
+        val nativeEvent = (event.mouseEvent as MouseEvent)
+        val isAnyPressed = nativeEvent.modifiersEx and AnyButtonMask != 0
+//        println(nativeEvent.modifiersEx)
+        if (isAnyPressed /*|| event.buttons.areAnyPressed*/) {
           val previousPoints: List<Id> = currentPoints
           if (previousPoints.isEmpty()) {
             currentPoints = listOf(addPoint(point.pt))
@@ -685,3 +692,9 @@ class BezierPt(val refPt: Pt, val id: Id?, val curve: Element.Curve, val key: Id
 
 fun BezierPt.originPt(mapIdToPoint: Map<Id, Pt>): Pt = mapIdToPoint[key]!!
 val globalKeyListener:MutableSharedFlow<Key> = MutableSharedFlow()
+
+const val AnyButtonMask =
+  InputEvent.BUTTON1_DOWN_MASK or InputEvent.BUTTON2_DOWN_MASK or InputEvent.BUTTON3_DOWN_MASK
+
+//val PointerButtons.areAnyPressed2: Boolean
+//  get() = (packedValue and AnyButtonMask) != 0

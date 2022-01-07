@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +37,18 @@ fun main() {
       }
     ) {
       Box(Modifier.fillMaxSize()) {
-        UsageInCommon()
+//        val viewConfiguration = object : ViewConfiguration {
+//          override val longPressTimeoutMillis: Long = 500
+//          override val doubleTapTimeoutMillis: Long = 300
+//          override val doubleTapMinTimeMillis: Long = 40
+//          override val touchSlop: Float get() = 0.0f
+//        }
+//
+//        CompositionLocalProvider(
+//          LocalViewConfiguration provides viewConfiguration
+//        ) {
+          UsageInCommon()
+//        }
       }
     }
   }

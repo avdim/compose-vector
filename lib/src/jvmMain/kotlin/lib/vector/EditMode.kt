@@ -89,7 +89,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
 
   // UI
-  var editPanelIsOpen by remember { mutableStateOf(false) }
+  var editPanelIsOpen by remember { mutableStateOf(true) }
   if (editPanelIsOpen) {
     Window(
       state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
@@ -125,9 +125,12 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               ColorPicker(options.color) {
                 replaceChangeOptions { options.copy(color = it) }
               }
-              Checkbox(options.fillPath, onCheckedChange = { changedChecked->
-                replaceChangeOptions { options.copy(fillPath = changedChecked) }
-              })
+              Row {
+                Checkbox(options.fillPath, onCheckedChange = { changedChecked->
+                  replaceChangeOptions { options.copy(fillPath = changedChecked) }
+                })
+                Text("fill")
+              }
             }
             is DrawOptions.Rect -> {
               ColorPicker(options.color) {

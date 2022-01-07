@@ -52,28 +52,45 @@ fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
 @Composable
 fun OpenColorPicker(initColor: ULong, onSelect: (ULong) -> Unit) {
   Column {
-    var currentColor: ULong by remember { mutableStateOf(initColor) }
+    var red: Int by remember { mutableStateOf((Color(initColor).red * 0xFF).toInt()) }
+    var green: Int by remember { mutableStateOf((Color(initColor).green * 0xFF).toInt()) }
+    var blue: Int by remember { mutableStateOf((Color(initColor).blue * 0xFF).toInt()) }
+    val currentColor: ULong by derivedStateOf { Color(red, green, blue).value }
 
     Canvas(Modifier.size(50.dp, 50.dp)) {
       drawRect(Color(currentColor), size = Size(50f, 50f))
     }
-    Canvas(Modifier.size(300.dp, 300.dp).pointerInput(Unit) {
-      awaitPointerEventScope {
-        while (true) {
-          val pointer: PointerInputChange = awaitFirstDown()
-          val red = pointer.position.x.toInt()
-          val green = pointer.position.y.toInt()
-          currentColor = Color(red, green, 0xff).value
+    Row {
+      Canvas(Modifier.size(256.dp, 256.dp).pointerInput(Unit) {
+        awaitPointerEventScope {
+          while (true) {
+            val pointer: PointerInputChange = awaitFirstDown()
+            red = pointer.position.x.toInt()
+            green = pointer.position.y.toInt()
+          }
+        }
+      }) {
+        for (r in 0..0xFF) {
+          for (g in 0..0xFF) {
+            drawRect(
+              color = Color(red = r, green = g, blue = blue),
+              topLeft = Offset(r.toFloat(), g.toFloat()),
+              size = Size(1f, 1f)
+            )
+          }
         }
       }
-    }) {
-      for (i in 0..0xFF) {
-        for (j in 0..0xFF) {
-          drawRect(
-            color = Color(red = i, green = j, blue = 0xff),
-            topLeft = Offset(i.toFloat(), j.toFloat()),
-            size = Size(1f, 1f)
-          )
+      val BAND_WIDTH = 20
+      Canvas(Modifier.size(BAND_WIDTH.dp, 256.dp).pointerInput(Unit) {
+        awaitPointerEventScope {
+          while (true) {
+            val pointer: PointerInputChange = awaitFirstDown()
+            blue = pointer.position.y.toInt()
+          }
+        }
+      }) {
+        for(b in 0 .. 0xFF) {
+          drawRect(color = Color(0,0,b), topLeft = Offset(0f,b.toFloat()), size = Size(BAND_WIDTH.toFloat(), 1f))
         }
       }
     }

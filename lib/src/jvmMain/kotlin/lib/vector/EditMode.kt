@@ -234,7 +234,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   }
 
   DisplayMode(
-    modifier = modifier.pointerInput2(Unit) {
+    modifier = modifier.pointerInput(Unit) {
       while (true) {
         val event = awaitPointerEventScope {
           awaitPointerEvent()

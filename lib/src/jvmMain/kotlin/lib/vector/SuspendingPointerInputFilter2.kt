@@ -219,70 +219,8 @@ fun Modifier.pointerInput2(
     val density = LocalDensity.current
     val viewConfiguration = LocalViewConfiguration.current
     remember(density) { SuspendingPointerInputFilter2(viewConfiguration, density) }.apply {
-        val filter = this
+        val filter: SuspendingPointerInputFilter2 = this
         LaunchedEffect(this, key1) {
-            filter.coroutineScope = this
-            block()
-        }
-    }
-}
-
-/**
- * Create a modifier for processing pointer input within the region of the modified element.
- *
- * [pointerInput] [block]s may call [PointerInputScope.awaitPointerEventScope] to install a pointer
- * input handler that can [AwaitPointerEventScope.awaitPointerEvent] to receive and consume
- * pointer input events. Extension functions on [PointerInputScope] or [AwaitPointerEventScope]
- * may be defined to perform higher-level gesture detection. The pointer input handling [block]
- * will be cancelled and **re-started** when [pointerInput] is recomposed with a different [key1] or
- * [key2].
- */
-fun Modifier.pointerInput2(
-    key1: Any?,
-    key2: Any?,
-    block: suspend PointerInputScope.() -> Unit
-): Modifier = composed(
-    inspectorInfo = debugInspectorInfo {
-        name = "pointerInput"
-        properties["key1"] = key1
-        properties["key2"] = key2
-        properties["block"] = block
-    }
-) {
-    val density = LocalDensity.current
-    val viewConfiguration = LocalViewConfiguration.current
-    remember(density) { SuspendingPointerInputFilter2(viewConfiguration, density) }.also { filter ->
-        LaunchedEffect(this, key1, key2) {
-            filter.coroutineScope = this
-            filter.block()
-        }
-    }
-}
-
-/**
- * Create a modifier for processing pointer input within the region of the modified element.
- *
- * [pointerInput] [block]s may call [PointerInputScope.awaitPointerEventScope] to install a pointer
- * input handler that can [AwaitPointerEventScope.awaitPointerEvent] to receive and consume
- * pointer input events. Extension functions on [PointerInputScope] or [AwaitPointerEventScope]
- * may be defined to perform higher-level gesture detection. The pointer input handling [block]
- * will be cancelled and **re-started** when [pointerInput] is recomposed with any different [keys].
- */
-fun Modifier.pointerInput2(
-    vararg keys: Any?,
-    block: suspend PointerInputScope.() -> Unit
-): Modifier = composed(
-    inspectorInfo = debugInspectorInfo {
-        name = "pointerInput"
-        properties["keys"] = keys
-        properties["block"] = block
-    }
-) {
-    val density = LocalDensity.current
-    val viewConfiguration = LocalViewConfiguration.current
-    remember(density) { SuspendingPointerInputFilter2(viewConfiguration, density) }.apply {
-        val filter = this
-        LaunchedEffect(this, *keys) {
             filter.coroutineScope = this
             block()
         }

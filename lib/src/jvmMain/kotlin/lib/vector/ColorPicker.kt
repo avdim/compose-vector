@@ -2,23 +2,22 @@ package lib.vector
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogState
+import androidx.compose.ui.window.WindowPosition
 
 @Composable
 fun ColorPicker(currentColor: ULong, onChangeColor: (ULong) -> Unit) {
@@ -64,9 +63,11 @@ fun OpenColorPicker(initColor: ULong, onSelect: (ULong) -> Unit) {
       Canvas(Modifier.size(256.dp, 256.dp).pointerInput(Unit) {
         awaitPointerEventScope {
           while (true) {
-            val pointer: PointerInputChange = awaitFirstDown()
-            red = pointer.position.x.toInt()
-            green = pointer.position.y.toInt()
+            val event = awaitPointerEvent()
+            if (event.buttons.isPrimaryPressed) {
+              red = event.changes.first().position.x.toInt()
+              green = event.changes.first().position.y.toInt()
+            }
           }
         }
       }) {
@@ -84,13 +85,15 @@ fun OpenColorPicker(initColor: ULong, onSelect: (ULong) -> Unit) {
       Canvas(Modifier.size(BAND_WIDTH.dp, 256.dp).pointerInput(Unit) {
         awaitPointerEventScope {
           while (true) {
-            val pointer: PointerInputChange = awaitFirstDown()
-            blue = pointer.position.y.toInt()
+            val event = awaitPointerEvent()
+            if (event.buttons.isPrimaryPressed) {
+              blue = event.changes.first().position.y.toInt()
+            }
           }
         }
       }) {
-        for(b in 0 .. 0xFF) {
-          drawRect(color = Color(0,0,b), topLeft = Offset(0f,b.toFloat()), size = Size(BAND_WIDTH.toFloat(), 1f))
+        for (b in 0..0xFF) {
+          drawRect(color = Color(0, 0, b), topLeft = Offset(0f, b.toFloat()), size = Size(BAND_WIDTH.toFloat(), 1f))
         }
       }
     }

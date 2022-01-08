@@ -36,27 +36,15 @@ fun main() = application {
     state = WindowState(size = DpSize(350.dp, 450.dp)),
     onCloseRequest = ::exitApplication
   ) {
-    MaterialTheme(
-      colors = MaterialTheme.colors.copy(
-        primary = Color(10, 132, 232),
-        secondary = Color(150, 232, 150)
-      )
+    val clicks = remember { mutableStateOf(0) }
+    Column(
+      modifier = Modifier.padding(40.dp)
     ) {
-      val clicks = remember { mutableStateOf(0) }
-      Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-      ) {
-        Column(
-          modifier = Modifier.padding(40.dp)
-        ) {
-          Text(text = "Clicks: ${clicks.value}")
-          Spacer(modifier = Modifier.height(20.dp))
-          for (x in 1..5) {
-            FocusableBox("Button $x", { clicks.value++ })
-            Spacer(modifier = Modifier.height(20.dp))
-          }
-        }
+      Text(text = "Clicks: ${clicks.value}")
+      Spacer(modifier = Modifier.height(20.dp))
+      for (x in 1..5) {
+        FocusableBox("Button $x", { clicks.value++ })
+        Spacer(modifier = Modifier.height(20.dp))
       }
     }
   }

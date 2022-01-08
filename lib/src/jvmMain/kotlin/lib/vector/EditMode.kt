@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-//import androidx.compose.ui.awt.awtEvent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.PathEffect
@@ -244,8 +243,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         }
         val point = event.mouseEvent?.point ?: continue
         val nativeEvent = (event.mouseEvent as MouseEvent)
-        val isAnyPressed = nativeEvent.modifiersEx and AnyButtonMask != 0
-//        println(nativeEvent.modifiersEx)
+        val anyButtonMask = InputEvent.BUTTON1_DOWN_MASK or InputEvent.BUTTON2_DOWN_MASK or InputEvent.BUTTON3_DOWN_MASK
+        val isAnyPressed = nativeEvent.modifiersEx and anyButtonMask != 0
         if (isAnyPressed /*|| event.buttons.areAnyPressed*/) {
           val previousPoints: List<Id> = currentPoints
           if (previousPoints.isEmpty()) {
@@ -319,8 +318,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
               println("delete deleteId: $deleteId")
               savedElements = savedElements.toMutableList().apply {
                 for(i in this.indices.reversed()) {
-                  val element = get(i)
-                  when (element) {
+                  when (val element = get(i)) {
                     is Element.Curve -> {
                       this[i] = element.copy(
                         points = element.points.filter { it != deleteId },
@@ -635,11 +633,10 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
 
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 fun Map<Id, BezierRefEdit>.pt(mapIdToPoint: Map<Id, Pt>): Map<Pt, BezierRef> {
   val result = mutableMapOf<Pt, BezierRef>()
   entries.forEach {
-    result.put(it.key.pt(mapIdToPoint), it.value.pt(mapIdToPoint))
+    result[it.key.pt(mapIdToPoint)] = it.value.pt(mapIdToPoint)
   }
   return result
 }
@@ -680,9 +677,3 @@ class BezierPt(val refPt: Pt, val id: Id?, val curve: Element.Curve, val key: Id
 
 fun BezierPt.originPt(mapIdToPoint: Map<Id, Pt>): Pt = mapIdToPoint[key]!!
 val globalKeyListener:MutableSharedFlow<Key> = MutableSharedFlow()
-
-const val AnyButtonMask =
-  InputEvent.BUTTON1_DOWN_MASK or InputEvent.BUTTON2_DOWN_MASK or InputEvent.BUTTON3_DOWN_MASK
-
-//val PointerButtons.areAnyPressed2: Boolean
-//  get() = (packedValue and AnyButtonMask) != 0

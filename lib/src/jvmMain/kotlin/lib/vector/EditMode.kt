@@ -246,19 +246,16 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         val anyButtonMask = InputEvent.BUTTON1_DOWN_MASK or InputEvent.BUTTON2_DOWN_MASK or InputEvent.BUTTON3_DOWN_MASK
         val isAnyPressed = nativeEvent.modifiersEx and anyButtonMask != 0
         if (isAnyPressed /*|| event.buttons.areAnyPressed*/) {
-          val previousPoints: List<Id> = currentPoints
-          if (previousPoints.isEmpty()) {
-            currentPoints = listOf(addPoint(point.pt))
+          currentPoints = currentPoints + addPoint(point.pt)
+          if (currentPoints.isEmpty()) {
             pointerStart(point.pt)
           } else {
-            currentPoints = previousPoints + addPoint(point.pt)
             pointerMove(point.pt)
           }
         } else {
           if (event.keyboardModifiers.isShiftPressed.not()) {
             pointerEnd(point.pt)
             currentPoints = emptyList()
-
             //Iterate and remove unused points
             val usedIds = mutableSetOf<Id>()
             savedElements.forEach { e ->

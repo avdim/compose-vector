@@ -224,38 +224,24 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
     }
   }
 
-  fun pointerStart(pt: Pt) {}
-  fun pointerMove(pt: Pt) {}
-  fun pointerEnd(pt: Pt) {
-    if (currentPoints.isNotEmpty()) {
-      val e = currentElement
-      if (e != null) {
-        savedElements = savedElements + e
-      }
-    }
-  }
-
   DisplayMode(
     modifier = modifier.pointerInput(Unit) {
       while (true) {
-        val event = awaitPointerEventScope {
-          awaitPointerEvent()
-        }
+        val event = awaitPointerEventScope { awaitPointerEvent() }
         val point = event.mouseEvent?.point ?: continue
         val nativeEvent = (event.mouseEvent as MouseEvent)
         val anyButtonMask = InputEvent.BUTTON1_DOWN_MASK or InputEvent.BUTTON2_DOWN_MASK or InputEvent.BUTTON3_DOWN_MASK
         val isAnyPressed = nativeEvent.modifiersEx and anyButtonMask != 0
         if (isAnyPressed /*|| event.buttons.areAnyPressed*/) {
           currentPoints = currentPoints + addPoint(point.pt)
-          if (currentPoints.isEmpty()) {
-            pointerStart(point.pt)
-          } else {
-            pointerMove(point.pt)
-          }
         } else {
           if (event.keyboardModifiers.isShiftPressed.not()) {
-            pointerEnd(point.pt)
-            currentPoints = emptyList()
+            if (currentPoints.isNotEmpty()) {
+              currentElement?.let {
+                savedElements = savedElements + it
+              }
+              currentPoints = emptyList()
+            }
             //Iterate and remove unused points
             val usedIds = mutableSetOf<Id>()
             savedElements.forEach { e ->

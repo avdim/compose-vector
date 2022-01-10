@@ -92,9 +92,8 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
   if (editPanelIsOpen) {
     Window(
       state = WindowState(width = 400.dp, height = 800.dp, position = WindowPosition(0.dp, 0.dp)),
-      onCloseRequest = {
-        editPanelIsOpen = false
-      }) {
+      onCloseRequest = { editPanelIsOpen = false }
+    ) {
       Row {
         Column {
           TxtButton("Clear") {
@@ -118,8 +117,7 @@ fun EditMode(modifier: Modifier, lambda: GeneratedScope.() -> Unit) {
         }
         Column {
           Text("${controllerState.name} settings:")
-          val options = controllerState.options
-          when (options) {
+          when (val options = controllerState.options) {
             is DrawOptions.Curve -> {
               ColorPicker(options.color) {
                 replaceChangeOptions { options.copy(color = it) }
